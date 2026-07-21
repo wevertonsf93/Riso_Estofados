@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Avançado de Orçamento - Estofados</title>
+  <style>
+    :root {
+      --primary: #1e293b;
+      --secondary: #16a34a;
+      --whatsapp: #25d366;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --border: #e2e8f0;
+    }
+    
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #0f172a; }
+    
+    .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .full-width { grid-column: 1 / -1; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+    
+    .card { background: var(--card); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+    
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+    h2, h3 { color: var(--primary); margin: 0; font-size: 1.25rem; }
+    
+    label { font-weight: 600; display: block; margin-top: 12px; font-size: 13px; color: #475569; }
+    select, input { width: 100%; padding: 10px 12px; margin-top: 4px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background-color: #fff; }
+    select:focus, input:focus { outline: none; border-color: var(--accent); ring: 2px var(--accent); }
+    
+    .row { display: flex; gap: 10px; }
+    .col { flex: 1; }
+    
+    button { padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    
+    .btn-primary { background: var(--accent); color: white; width: 100%; margin-top: 15px; }
+    .btn-secondary { background: var(--secondary); color: white; }
+    .btn-whatsapp { background: var(--whatsapp); color: white; width: 100%; font-size: 15px; margin-top: 8px; }
+    .btn-save { background: #0284c7; color: white; width: 100%; margin-top: 8px; }
+    .btn-clear { background: #94a3b8; color: white; width: 100%; margin-top: 8px; }
+    .btn-manage { background: #475569; color: white; font-size: 12px; padding: 6px 12px; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    
+    .item-list { list-style: none; padding: 0; margin-top: 15px; max-height: 300px; overflow-y: auto; }
+    .item-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); background: #fafafa; margin-bottom: 6px; border-radius: 6px; }
+    .item-info { flex: 1; }
+    .item-title { font-weight: 600; font-size: 14px; display: block; }
+    .item-detail { font-size: 12px; color: #64748b; }
+    .item-actions { display: flex; gap: 4px; }
+    .btn-sm { padding: 4px 8px; font-size: 12px; border-radius: 4px; }
+
+    .total-box { font-size: 22px; font-weight: 700; color: var(--primary); margin-top: 15px; text-align: right; background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { padding: 10px 12px; border: 1px solid var(--border); text-align: left; }
+    th { background: #f1f5f9; color: var(--primary); font-weight: 600; }
+    
+    /* Modal de Gerenciamento */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: white; width: 90%; max-width: 700px; max-height: 85vh; border-radius: 12px; padding: 24px; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .close-modal { font-size: 24px; cursor: pointer; color: #64748b; border: none; background: none; }
+    
+    .badge { background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- FORMULÁRIO DE MONTAGEM DO ORÇAMENTO -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Montar Orçamento</h2>
+      <button class="btn-manage" onclick="abrirModalGerenciador()">⚙️ Gerenciar Materiais</button>
+    </div>
+    
+    <div class="row">
+      <div class="col">
+        <label for="cliente">Nome do Cliente:</label>
+        <input type="text" id="cliente" placeholder="Ex: Maria Silva" oninput="atualizarResumo()">
+      </div>
+      <div class="col">
+        <label for="telefone">WhatsApp (com DDD):</label>
+        <input type="tel" id="telefone" placeholder="Ex: 83988887777">
+      </div>
+    </div>
+
+    <label for="bairro">Bairro de João Pessoa (Sede: João Paulo II):</label>
+    <select id="bairro" onchange="calcularFrete()">
+      <!-- Preenchido via JS -->
+    </select>
+
+    <!-- SELEÇÃO POR CATEGORIA -->
+    <div class="row">
+      <div class="col">
+        <label for="categoriaSel">1. Categoria:</label>
+        <select id="categoriaSel" onchange="filtrarMateriaisPorCategoria()">
+          <option value="todos">-- Todas as Categorias --</option>
+          <option value="Tecidos">Tecidos</option>
+          <option value="Espumas">Espumas</option>
+          <option value="Colas e Adesivos">Colas e Adesivos</option>
+          <option value="Grampos e Fixadores">Grampos e Fixadores</option>
+          <option value="Linhas e Costura">Linhas e Costura</option>
+          <option value="Estrutura e Suporte">Estrutura e Suporte</option>
+          <option value="Outros Insumos">Outros Insumos</option>
+        </select>
+      </div>
+      <div class="col">
+        <label for="materialSel">2. Material / Insumo:</label>
+        <select id="materialSel" onchange="aoSelecionarMaterial()">
+          <!-- Preenchido via JS -->
+        </select>
+      </div>
+    </div>
+
+    <!-- CAMPOS DINÂMICOS DE ESPUMA -->
+    <div id="espumaCampos" style="display: none; background: #f1f5f9; padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px solid #cbd5e1;">
+      <div class="row">
+        <div class="col">
+          <label for="densidade">Densidade:</label>
+          <select id="densidade" onchange="calcularPrecoEspumaDinamico()">
+            <option value="D20">D20</option>
+            <option value="D23">D23</option>
+            <option value="D26">D26</option>
+            <option value="D28">D28</option>
+            <option value="D33" selected>D33 (Padrão Sofás)</option>
+            <option value="D45">D45 (Alta firmeza)</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="espessura">Espessura (cm):</label>
+          <input type="number" id="espessura" value="5" min="1" max="30" oninput="calcularPrecoEspumaDinamico()">
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIÇÃO DE PREÇO E QTD ANTES DE ADICIONAR -->
+    <div class="row">
+      <div class="col">
+        <label for="precoUnitarioInput">Preço Unitário (R$): <span style="font-weight:normal; color:#64748b">(editável)</span></label>
+        <input type="number" id="precoUnitarioInput" step="0.01" value="0.00">
+      </div>
+      <div class="col">
+        <label for="qtdInput">Quantidade / Metragem:</label>
+        <input type="number" id="qtdInput" value="1" min="0.1" step="0.1">
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="adicionarItemAoOrcamento()">+ Adicionar ao Orçamento</button>
+
+    <label for="maoDeObra">Mão de Obra / Serviço de Tapeçaria (R$):</label>
+    <input type="number" id="maoDeObra" value="200" step="10" oninput="atualizarResumo()">
+  </div>
+
+  <!-- RESUMO E AÇÕES DO ORÇAMENTO -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Resumo do Orçamento</h2>
+      <span class="badge">Sede: João Paulo II</span>
+    </div>
+    
+    <p id="resumoCliente"><strong>Cliente:</strong> Não informado</p>
+    <p id="resumoBairro"><strong>Entrega:</strong> Não selecionado</p>
+
+    <ul class="item-list" id="listaItens">
+      <!-- Itens inseridos dinamicamente -->
+    </ul>
+
+    <div class="total-box">
+      Total: R$ <span id="valorTotal">0.00</span>
+    </div>
+
+    <button class="btn-save" onclick="salvarOrcamento()">💾 Salvar no Histórico</button>
+    <button class="btn-whatsapp" onclick="enviarWhatsApp()">📲 Enviar para o WhatsApp</button>
+    <button style="background: #475569; color: white; width: 100%; margin-top: 8px;" onclick="window.print()">🖨️ Imprimir / PDF</button>
+    <button class="btn-clear" onclick="limparOrcamentoAtual()">🗑️ Limpar Atual</button>
+  </div>
+
+  <!-- HISTÓRICO DE ORÇAMENTOS -->
+  <div class="card full-width">
+    <div class="card-header">
+      <h2>Histórico de Orçamentos Salvos</h2>
+    </div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Cliente</th>
+            <th>Bairro</th>
+            <th>Total (R$)</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaHistorico">
+          <!-- Histórico preenchido via JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL PARA GERENCIAR/CADASTRAR MATERIAIS -->
+<div class="modal" id="modalGerenciador">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Gerenciar Banco de Materiais e Preços</h3>
+      <button class="close-modal" onclick="fecharModalGerenciador()">&times;</button>
+    </div>
+
+    <!-- FORMULÁRIO DE NOVO MATERIAL -->
+    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border);">
+      <h4 style="margin-top:0; color: var(--primary);">Cadastrar / Editar Material</h4>
+      <input type="hidden" id="editMaterialIndex" value="-1">
+      
+      <div class="row">
+        <div class="col">
+          <label for="cadCategoria">Categoria:</label>
+          <select id="cadCategoria">
+            <option value="Tecidos">Tecidos</option>
+            <option value="Espumas">Espumas</option>
+            <option value="Colas e Adesivos">Colas e Adesivos</option>
+            <option value="Grampos e Fixadores">Grampos e Fixadores</option>
+            <option value="Linhas e Costura">Linhas e Costura</option>
+            <option value="Estrutura e Suporte">Estrutura e Suporte</option>
+            <option value="Outros Insumos">Outros Insumos</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="cadNome">Nome do Material:</label>
+          <input type="text" id="cadNome" placeholder="Ex: Suede Bouclé, Grampo 80/12">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="cadPreco">Preço Padrão (R$):</label>
+          <input type="number" id="cadPreco" step="0.01" placeholder="0.00">
+        </div>
+        <div class="col">
+          <label for="cadUnidade">Unidade:</label>
+          <select id="cadUnidade">
+            <option value="metro">Metro (m)</option>
+            <option value="unid">Unidade (un)</option>
+            <option value="rolo">Rolo</option>
+            <option value="caixa">Caixa / Pacote</option>
+            <option value="lata">Lata / Galão</option>
+            <option value="espuma">Calculado (Espuma)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 10px;">
+        <button class="btn-secondary" style="flex:1;" onclick="salvarNovoMaterial()">💾 Salvar no Cadastro</button>
+        <button class="btn-clear" style="width: auto;" onclick="limparFormularioCadastro()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- TABELA DE MATERIAIS CADASTRADOS -->
+    <h4 style="margin-top:20px; color: var(--primary);">Materiais Cadastrados</h4>
+    <div style="max-height: 250px; overflow-y: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th>Nome</th>
+            <th>Preço Padrão</th>
+            <th>Unidade</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaMateriaisCadastrados">
+          <!-- Preenchido via JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // BANCO DE DADOS INICIAL DE MATERIAIS
+  const materiaisPadrao = [
+    // Tecidos
+    { categoria: "Tecidos", nome: "Tecido - Suede Simples", preco: 25.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Suede Animale / Veludo", preco: 38.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Linho Rústico", preco: 55.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Couro Sintético Corino", preco: 35.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Couro Facto", preco: 65.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Acquablock Impermeável", preco: 58.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Jacquard", preco: 48.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Chenille", preco: 42.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Sarja 100% Algodão", preco: 32.00, unidade: "metro" },
+    { categoria: "Tecidos", nome: "Tecido - Veludo Cotele", preco: 62.00, unidade: "metro" },
+    
+    // Espumas
+    { categoria: "Espumas", nome: "Espuma Sob Medida (Densidade/Espessura)", preco: 0, unidade: "espuma" },
+    
+    // Colas e Adesivos
+    { categoria: "Colas e Adesivos", nome: "Cola de Contato Spray (Lata 500ml)", preco: 45.00, unidade: "lata" },
+    { categoria: "Colas e Adesivos", nome: "Cola de Contato Líquida (Galão 3.6L)", preco: 130.00, unidade: "lata" },
+
+    // Grampos e Fixadores
+    { categoria: "Grampos e Fixadores", nome: "Grampo Galvanizado 80/10 (Caixa 5000un)", preco: 28.00, unidade: "caixa" },
+    { categoria: "Grampos e Fixadores", nome: "Grampo Galvanizado 80/12 (Caixa 5000un)", preco: 32.00, unidade: "caixa" },
+    { categoria: "Grampos e Fixadores", nome: "Parafusos para Estrutura (Kit 50un)", preco: 15.00, unidade: "caixa" },
+    { categoria: "Grampos e Fixadores", nome: "Pregos de Marcenaria (Pacote 1kg)", preco: 18.00, unidade: "caixa" },
+
+    // Linhas e Costura
+    { categoria: "Linhas e Costura", nome: "Linha de Nylon Pesada nº 40 (Cone)", preco: 22.00, unidade: "rolo" },
+    { categoria: "Linhas e Costura", nome: "Linha Poliéster de Alta Resistência", preco: 18.00, unidade: "rolo" },
+
+    // Estrutura e Suporte
+    { categoria: "Estrutura e Suporte", nome: "Percinta Elástica / Liga Italiana (Metro)", preco: 6.50, unidade: "metro" },
+    { categoria: "Estrutura e Suporte", nome: "Molas Zig-Zag / No-Sag (Unidade)", preco: 12.00, unidade: "unid" },
+    { categoria: "Estrutura e Suporte", nome: "Molas Ensacadas (Módulo Sofá)", preco: 95.00, unidade: "unid" },
+    { categoria: "Estrutura e Suporte", nome: "Madeira Eucalipto Trata (Metro Ripa)", preco: 15.00, unidade: "metro" },
+
+    // Outros Insumos
+    { categoria: "Outros Insumos", nome: "Acrilon / Manta Acrílica 150g (Metro)", preco: 14.00, unidade: "metro" },
+    { categoria: "Outros Insumos", nome: "Barbante para Capitonê / Puxados (Rolo)", preco: 12.00, unidade: "rolo" },
+    { categoria: "Outros Insumos", nome: "TNT Gramatura 80 Preto (Metro)", preco: 5.50, unidade: "metro" },
+    { categoria: "Outros Insumos", nome: "Pés de Madeira para Sofá (Unidade)", preco: 18.00, unidade: "unid" }
+  ];
+
+  // TABELA DE FRETE DE JOÃO PESSOA (COM SEDE EM JOÃO PAULO II)
+  const bairrosJP = [
+    { nome: "João Paulo II (Sede)", valor: 50.00 },
+    { nome: "Geisel", valor: 50.00 },
+    { nome: "Cristo Redentor", valor: 50.00 },
+    { nome: "Mangabeira", valor: 50.00 },
+    { nome: "Ernesto Geisel", valor: 50.00 },
+    { nome: "Rangel", valor: 55.00 },
+    { nome: "Água Fria", valor: 55.00 },
+    { nome: "Bancários", valor: 60.00 },
+    { nome: "Cidade dos Colibris", valor: 60.00 },
+    { nome: "José Américo", valor: 55.00 },
+    { nome: "Jaguaribe", valor: 60.00 },
+    { nome: "Cruz das Armas", valor: 60.00 },
+    { nome: "Centro", valor: 65.00 },
+    { nome: "Torre", valor: 65.00 },
+    { nome: "Epitácio Pessoa / Expedicionários", valor: 65.00 },
+    { nome: "Tambauzinho", valor: 70.00 },
+    { nome: "Castelo Branco", valor: 65.00 },
+    { nome: "Miramar", valor: 75.00 },
+    { nome: "Tambaú", valor: 80.00 },
+    { nome: "Cabo Branco", valor: 80.00 },
+    { nome: "Manaíra", valor: 80.00 },
+    { nome: "Bessa", valor: 85.00 },
+    { nome: "Aeroclube", valor: 85.00 },
+    { nome: "Intermares (Fronteira)", valor: 90.00 },
+    { nome: "Valentina Figueiredo", valor: 60.00 },
+    { nome: "Gramame / Colinas do Sul", valor: 65.00 },
+    { nome: "Bayeux / Várzea Nova (RMR)", valor: 90.00 },
+    { nome: "Santa Rita (RMR)", valor: 100.00 }
+  ];
+
+  // ESTADOS DO SISTEMA
+  let materiais = [];
+  let itensOrcamento = [];
+  let valorFreteAtual = 50.00;
+  let nomeBairroAtual = "João Paulo II (Sede)";
+
+  // INICIALIZAÇÃO
+  window.onload = () => {
+    carregarMateriaisCadastrados();
+    preencherSelectBairros();
+    filtrarMateriaisPorCategoria();
+    carregarHistorico();
+  };
+
+  // BANCO DE MATERIAIS NO LOCALSTORAGE
+  function carregarMateriaisCadastrados() {
+    const salvos = localStorage.getItem('materiais_estofados_db');
+    if (salvos) {
+      materiais = JSON.parse(salvos);
+    } else {
+      materiais = [...materiaisPadrao];
+      salvarMateriaisNoStorage();
+    }
+  }
+
+  function salvarMateriaisNoStorage() {
+    localStorage.setItem('materiais_estofados_db', JSON.stringify(materiais));
+  }
+
+  function preencherSelectBairros() {
+    const selectBairro = document.getElementById('bairro');
+    selectBairro.innerHTML = "";
+    bairrosJP.sort((a,b) => a.nome.localeCompare(a.nome)).forEach((b) => {
+      let opt = document.createElement('option');
+      opt.value = b.valor;
+      opt.dataset.nome = b.nome;
+      opt.textContent = `${b.nome} - Frete: R$ ${b.valor.toFixed(2)}`;
+      selectBairro.appendChild(opt);
+    });
+    calcularFrete();
+  }
+
+  function filtrarMateriaisPorCategoria() {
+    const catFiltro = document.getElementById('categoriaSel').value;
+    const selectMat = document.getElementById('materialSel');
+    selectMat.innerHTML = "";
+
+    const filtrados = materiais.filter(m => catFiltro === "todos" || m.categoria === catFiltro);
+
+    if (filtrados.length === 0) {
+      selectMat.innerHTML = "<option value='-1'>Nenhum material encontrado</option>";
+      return;
+    }
+
+    filtrados.forEach((m) => {
+      const idxReal = materiais.indexOf(m);
+      let opt = document.createElement('option');
+      opt.value = idxReal;
+      opt.textContent = `[${m.categoria}] ${m.nome} - R$ ${m.preco.toFixed(2)} / ${m.unidade}`;
+      selectMat.appendChild(opt);
+    });
+
+    aoSelecionarMaterial();
+  }
+
+  function aoSelecionarMaterial() {
+    const idx = parseInt(document.getElementById('materialSel').value);
+    if (isNaN(idx) || idx < 0 || !materiais[idx]) return;
+
+    const mat = materiais[idx];
+    const isEspuma = mat.unidade === 'espuma';
+
+    document.getElementById('espumaCampos').style.display = isEspuma ? 'block' : 'none';
+
+    if (isEspuma) {
+      calcularPrecoEspumaDinamico();
+    } else {
+      document.getElementById('precoUnitarioInput').value = mat.preco.toFixed(2);
+    }
+  }
+
+  function calcularPrecoEspumaDinamico() {
+    const densidade = document.getElementById('densidade').value;
+    const espessura = parseInt(document.getElementById('espessura').value) || 1;
+    const fatorDensidade = { "D20": 18, "D23": 22, "D26": 26, "D28": 30, "D33": 38, "D45": 48 };
+    const precoCalculado = (fatorDensidade[densidade] || 30) * (espessura * 0.8);
+    
+    document.getElementById('precoUnitarioInput').value = precoCalculado.toFixed(2);
+  }
+
+  function calcularFrete() {
+    const selectBairro = document.getElementById('bairro');
+    valorFreteAtual = parseFloat(selectBairro.value);
+    nomeBairroAtual = selectBairro.options[selectBairro.selectedIndex].dataset.nome;
+    document.getElementById('resumoBairro').innerHTML = `<strong>Entrega:</strong> ${nomeBairroAtual}`;
+    atualizarResumo();
+  }
+
+  // ADICIONAR / EDITAR ITENS NO ORÇAMENTO
+  function adicionarItemAoOrcamento() {
+    const idx = parseInt(document.getElementById('materialSel').value);
+    if (isNaN(idx) || idx < 0) {
+      alert("Selecione um material válido.");
+      return;
+    }
+
+    const mat = materiais[idx];
+    const qtd = parseFloat(document.getElementById('qtdInput').value) || 1;
+    const precoUnitario = parseFloat(document.getElementById('precoUnitarioInput').value) || 0;
+
+    let descricao = mat.nome;
+    if (mat.unidade === 'espuma') {
+      const d = document.getElementById('densidade').value;
+      const e = document.getElementById('espessura').value;
+      descricao = `Espuma ${d} (${e} cm)`;
+    }
+
+    const subtotal = precoUnitario * qtd;
+
+    itensOrcamento.push({
+      idItem: Date.now(),
+      descricao,
+      qtd,
+      precoUnitario,
+      subtotal
+    });
+
+    atualizarResumo();
+  }
+
+  function removerItemOrcamento(idItem) {
+    itensOrcamento = itensOrcamento.filter(i => i.idItem !== idItem);
+    atualizarResumo();
+  }
+
+  function editarItemOrcamento(idItem) {
+    const item = itensOrcamento.find(i => i.idItem === idItem);
+    if (!item) return;
+
+    const novaQtd = prompt(`Altere a quantidade para "${item.descricao}":`, item.qtd);
+    if (novaQtd === null) return;
+    const novoPreco = prompt(`Altere o preço unitário (R$):`, item.precoUnitario);
+    if (novoPreco === null) return;
+
+    const q = parseFloat(novaQtd) || item.qtd;
+    const p = parseFloat(novoPreco) || item.precoUnitario;
+
+    item.qtd = q;
+    item.precoUnitario = p;
+    item.subtotal = q * p;
+
+    atualizarResumo();
+  }
+
+  function atualizarResumo() {
+    const cliente = document.getElementById('cliente').value.trim() || "Não informado";
+    document.getElementById('resumoCliente').innerHTML = `<strong>Cliente:</strong> ${cliente}`;
+
+    const lista = document.getElementById('listaItens');
+    lista.innerHTML = "";
+
+    let totalMateriais = 0;
+
+    itensOrcamento.forEach((item) => {
+      totalMateriais += item.subtotal;
+      lista.innerHTML += `
+        <li>
+          <div class="item-info">
+            <span class="item-title">${item.descricao}</span>
+            <span class="item-detail">${item.qtd}x R$ ${item.precoUnitario.toFixed(2)} = R$ ${item.subtotal.toFixed(2)}</span>
+          </div>
+          <div class="item-actions">
+            <button class="btn-sm btn-warning" onclick="editarItemOrcamento(${item.idItem})">✏️</button>
+            <button class="btn-sm btn-danger" onclick="removerItemOrcamento(${item.idItem})">🗑️</button>
+          </div>
+        </li>
+      `;
+    });
+
+    const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+    
+    lista.innerHTML += `
+      <li style="background: #f1f5f9; font-size: 13px;">
+        <span>Mão de Obra de Tapeçaria:</span> <strong>R$ ${maoDeObra.toFixed(2)}</strong>
+      </li>
+      <li style="background: #f1f5f9; font-size: 13px;">
+        <span>Frete (${nomeBairroAtual}):</span> <strong>R$ ${valorFreteAtual.toFixed(2)}</strong>
+      </li>
+    `;
+
+    const valorTotal = totalMateriais + maoDeObra + valorFreteAtual;
+    document.getElementById('valorTotal').textContent = valorTotal.toFixed(2);
+  }
+
+  // ENVIO PARA O WHATSAPP
+  function enviarWhatsApp() {
+    const cliente = document.getElementById('cliente').value.trim() || "Cliente";
+    const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
+    const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+
+    if (itensOrcamento.length === 0) {
+      alert("Adicione pelo menos um material ao orçamento antes de enviar.");
+      return;
+    }
+
+    let texto = `*ORÇAMENTO DE REFORMA DE ESTOFADO*\n`;
+    texto += `📍 *Loja:* João Paulo II, João Pessoa - PB\n`;
+    texto += `👤 *Cliente:* ${cliente}\n\n`;
+    texto += `🛋️ *MATERIAIS E INSUMOS:*\n`;
+
+    let totalMateriais = 0;
+    itensOrcamento.forEach((item) => {
+      totalMateriais += item.subtotal;
+      texto += `• ${item.qtd}x ${item.descricao} - R$ ${item.subtotal.toFixed(2)}\n`;
+    });
+
+    texto += `\n🛠️ *Mão de Obra:* R$ ${maoDeObra.toFixed(2)}\n`;
+    texto += `🚚 *Frete (${nomeBairroAtual}):* R$ ${valorFreteAtual.toFixed(2)}\n`;
+
+    const valorTotal = totalMateriais + maoDeObra + valorFreteAtual;
+    texto += `\n💰 *VALOR TOTAL:* R$ ${valorTotal.toFixed(2)}\n\n`;
+    texto += `_Ficamos à disposição para agendar a busca do estofado!_`;
+
+    const url = telefone 
+      ? `https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(texto)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    
+    window.open(url, '_blank');
+  }
+
+  // SALVAR / CARREGAR HISTÓRICO
+  function salvarOrcamento() {
+    if (itensOrcamento.length === 0) {
+      alert("Adicione materiais antes de salvar o orçamento.");
+      return;
+    }
+
+    const cliente = document.getElementById('cliente').value.trim() || "Cliente Sem Nome";
+    const telefone = document.getElementById('telefone').value;
+    const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+    const totalMateriais = itensOrcamento.reduce((acc, i) => acc + i.subtotal, 0);
+    const valorTotal = totalMateriais + maoDeObra + valorFreteAtual;
+
+    const orc = {
+      id: Date.now(),
+      dataHora: new Date().toLocaleString('pt-BR'),
+      cliente,
+      telefone,
+      bairro: nomeBairroAtual,
+      valorFrete: valorFreteAtual,
+      maoDeObra,
+      itens: [...itensOrcamento],
+      valorTotal
+    };
+
+    let historico = JSON.parse(localStorage.getItem('orcamentos_estofados_historico') || '[]');
+    historico.unshift(orc);
+    localStorage.setItem('orcamentos_estofados_historico', JSON.stringify(historico));
+
+    alert("Orçamento salvo com sucesso!");
+    carregarHistorico();
+  }
+
+  function carregarHistorico() {
+    const historico = JSON.parse(localStorage.getItem('orcamentos_estofados_historico') || '[]');
+    const tbody = document.getElementById('tabelaHistorico');
+    tbody.innerHTML = "";
+
+    if (historico.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">Nenhum orçamento salvo no histórico.</td></tr>`;
+      return;
+    }
+
+    historico.forEach((orc) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${orc.dataHora}</td>
+          <td>${orc.cliente}</td>
+          <td>${orc.bairro}</td>
+          <td><strong>R$ ${orc.valorTotal.toFixed(2)}</strong></td>
+          <td>
+            <button class="btn-sm btn-secondary" onclick="recarregarOrcamento(${orc.id})">Carregar</button>
+            <button class="btn-sm btn-danger" onclick="excluirOrcamentoHistorico(${orc.id})">Excluir</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function recarregarOrcamento(id) {
+    const historico = JSON.parse(localStorage.getItem('orcamentos_estofados_historico') || '[]');
+    const orc = historico.find(o => o.id === id);
+
+    if (orc) {
+      document.getElementById('cliente').value = orc.cliente;
+      document.getElementById('telefone').value = orc.telefone || "";
+      document.getElementById('maoDeObra').value = orc.maoDeObra;
+      itensOrcamento = [...orc.itens];
+      atualizarResumo();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function excluirOrcamentoHistorico(id) {
+    if (confirm("Deseja excluir este orçamento do histórico?")) {
+      let historico = JSON.parse(localStorage.getItem('orcamentos_estofados_historico') || '[]');
+      historico = historico.filter(o => o.id !== id);
+      localStorage.setItem('orcamentos_estofados_historico', JSON.stringify(historico));
+      carregarHistorico();
+    }
+  }
+
+  function limparOrcamentoAtual() {
+    itensOrcamento = [];
+    document.getElementById('cliente').value = "";
+    document.getElementById('telefone').value = "";
+    atualizarResumo();
+  }
+
+  // GERENCIADOR DE CADASTRAR/EDITAR/EXCLUIR MATERIAIS
+  function abrirModalGerenciador() {
+    document.getElementById('modalGerenciador').style.display = 'flex';
+    renderizarTabelaMateriaisCadastrados();
+  }
+
+  function fecharModalGerenciador() {
+    document.getElementById('modalGerenciador').style.display = 'none';
+    filtrarMateriaisPorCategoria();
+  }
+
+  function renderizarTabelaMateriaisCadastrados() {
+    const tbody = document.getElementById('tabelaMateriaisCadastrados');
+    tbody.innerHTML = "";
+
+    materiais.forEach((m, idx) => {
+      tbody.innerHTML += `
+        <tr>
+          <td><span class="badge">${m.categoria}</span></td>
+          <td>${m.nome}</td>
+          <td>R$ ${m.preco.toFixed(2)}</td>
+          <td>${m.unidade}</td>
+          <td>
+            <button class="btn-sm btn-warning" onclick="prepararEdicaoMaterial(${idx})">✏️ Editar</button>
+            <button class="btn-sm btn-danger" onclick="excluirMaterialDoCadastro(${idx})">🗑️ Excluir</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function salvarNovoMaterial() {
+    const cat = document.getElementById('cadCategoria').value;
+    const nome = document.getElementById('cadNome').value.trim();
+    const preco = parseFloat(document.getElementById('cadPreco').value) || 0;
+    const unidade = document.getElementById('cadUnidade').value;
+    const editIndex = parseInt(document.getElementById('editMaterialIndex').value);
+
+    if (!nome) {
+      alert("Informe o nome do material.");
+      return;
+    }
+
+    if (editIndex >= 0) {
+      // Edição
+      materiais[editIndex] = { categoria: cat, nome, preco, unidade };
+    } else {
+      // Novo Cadastro
+      materiais.push({ categoria: cat, nome, preco, unidade });
+    }
+
+    salvarMateriaisNoStorage();
+    renderizarTabelaMateriaisCadastrados();
+    limparFormularioCadastro();
+    alert("Material salvo com sucesso!");
+  }
+
+  function prepararEdicaoMaterial(idx) {
+    const m = materiais[idx];
+    document.getElementById('cadCategoria').value = m.categoria;
+    document.getElementById('cadNome').value = m.nome;
+    document.getElementById('cadPreco').value = m.preco;
+    document.getElementById('cadUnidade').value = m.unidade;
+    document.getElementById('editMaterialIndex').value = idx;
+  }
+
+  function excluirMaterialDoCadastro(idx) {
+    if (confirm(`Deseja excluir o material "${materiais[idx].nome}" do seu cadastro?`)) {
+      materiais.splice(idx, 1);
+      salvarMateriaisNoStorage();
+      renderizarTabelaMateriaisCadastrados();
+    }
+  }
+
+  function limparFormularioCadastro() {
+    document.getElementById('cadNome').value = "";
+    document.getElementById('cadPreco').value = "";
+    document.getElementById('editMaterialIndex').value = "-1";
+  }
+</script>
+
+</body>
+</html>

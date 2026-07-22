@@ -1,1260 +1,1588 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-bs-theme="light">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riso Estofados - Sistema Avançado de Orçamentos & Gestão</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riso Estofados - Sistema de Orçamentos e Gestão</title>
+  
+  <!-- Fontes e Ícones -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary: #1e293b;
+      --primary-light: #334155;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --secondary: #16a34a;
+      --whatsapp: #25d366;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --radius: 10px;
+    }
 
-    <!-- Bootstrap 5.3 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome 6 Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- html2pdf.js for PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
 
-    <style>
-        :root {
-            --brand-primary: #0f172a;
-            --brand-secondary: #1e293b;
-            --brand-accent: #2563eb;
-            --brand-success: #10b981;
-            --brand-whatsapp: #25d366;
-            --light-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-        }
+    /* TOPBAR COMPACTO OCULTÁVEL */
+    .topbar {
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
 
-        [data-bs-theme="dark"] {
-            --light-bg: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-        }
+    .topbar.hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--light-bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-        /* Navigation Header */
-        .app-navbar {
-            background-color: var(--brand-primary);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-        }
+    .btn-toggle-menu {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
 
-        .app-navbar.header-hidden {
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-            position: fixed;
-            width: 100%;
-        }
+    .btn-toggle-menu:hover {
+      background: rgba(255,255,255,0.25);
+    }
 
-        .menu-bar-trigger {
-            position: fixed;
-            top: 12px;
-            right: 15px;
-            z-index: 1040;
-            display: none;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-            animation: fadeInScale 0.25s ease-out forwards;
-        }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
 
-        .menu-bar-trigger.visible {
-            display: inline-flex;
-            align-items: center;
-        }
+    .topbar-info {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-align: right;
+    }
 
-        @keyframes fadeInScale {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+    @media (max-width: 640px) {
+      .topbar-info { display: none; }
+    }
 
-        .nav-pills .nav-link {
-            color: #94a3b8;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            transition: all 0.2s ease;
-        }
+    /* BOTÃO MENU FLUTUANTE */
+    .btn-floating-menu {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 950;
+      background: var(--primary);
+      color: white;
+      border: 1px solid var(--primary-light);
+      padding: 10px 16px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
 
-        .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
-            color: #ffffff;
-            background-color: var(--brand-accent);
-        }
+    .btn-floating-menu:hover {
+      transform: scale(1.05);
+      background: var(--primary-light);
+    }
 
-        /* Cards & Layout */
-        .card-custom {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 0.85rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
-        }
+    .btn-floating-menu.hide {
+      display: none;
+    }
 
-        .total-box {
-            background: #f0fdf4;
-            border: 2px solid #bbf7d0;
-            border-radius: 0.75rem;
-            padding: 1.25rem;
-            text-align: right;
-        }
+    /* SIDEBAR LATERAL (OFFCANVAS) */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
 
-        [data-bs-theme="dark"] .total-box {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
 
-        /* Tab Panes */
-        .tab-pane-content {
-            display: none;
-            animation: fadeIn 0.25s ease-in-out forwards;
-        }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      max-width: 85vw;
+      height: 100vh;
+      background: var(--primary);
+      color: white;
+      z-index: 1001;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    }
 
-        .tab-pane-content.active {
-            display: block;
-        }
+    .sidebar-overlay.active .sidebar {
+      transform: translateX(0);
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--primary-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        /* Printable PDF Styling */
-        #pdf-template {
-            background: #ffffff;
-            color: #1e293b;
-            padding: 2.5rem;
-            font-size: 13px;
-            line-height: 1.5;
-        }
+    .sidebar-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+    }
 
-        @media print {
-            body * { visibility: hidden; }
-            #pdf-template, #pdf-template * { visibility: visible; }
-            #pdf-template { position: absolute; left: 0; top: 0; width: 100%; }
-        }
-    </style>
+    .btn-close-sidebar {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .btn-close-sidebar:hover { color: white; }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 15px 10px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 6px;
+    }
+
+    .sidebar-nav button {
+      width: 100%;
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-nav button:hover,
+    .sidebar-nav button.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .sidebar-footer {
+      padding: 15px 20px;
+      border-top: 1px solid var(--primary-light);
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    /* CONTAINER PRINCIPAL */
+    .container {
+      max-width: 1240px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 22px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .card-header h2 {
+      font-size: 1.15rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* SELEÇÃO DE ABAS RÁPIDAS DE MATERIAL */
+    .quick-category-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .cat-tab-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: var(--primary);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .cat-tab-btn.active, .cat-tab-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* BADGE DE AVISO DOS INSUMOS AUTOMÁTICOS */
+    .auto-items-badge {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* FORMULÁRIOS E INPUTS */
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background-color: #fff;
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .col { flex: 1; }
+
+    @media (max-width: 600px) {
+      .row { flex-direction: column; gap: 0; }
+    }
+
+    /* BOTÕES */
+    .btn {
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    .btn-primary { background: var(--accent); color: white; width: 100%; margin-top: 15px; }
+    .btn-secondary { background: var(--secondary); color: white; }
+    .btn-whatsapp { background: var(--whatsapp); color: white; width: 100%; font-size: 1rem; margin-top: 10px; }
+    .btn-save { background: #0284c7; color: white; width: 100%; margin-top: 10px; }
+    .btn-clear { background: #94a3b8; color: white; width: 100%; margin-top: 10px; }
+    .btn-dark { background: var(--primary); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-sm { padding: 4px 10px; font-size: 0.78rem; border-radius: 4px; }
+
+    /* LISTA DE ITENS DO ORÇAMENTO */
+    .item-list {
+      list-style: none;
+      margin-top: 12px;
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .item-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+    }
+
+    .item-list li:last-child { border-bottom: none; }
+
+    .item-info { flex: 1; }
+    .item-title { font-weight: 600; font-size: 0.85rem; display: block; color: var(--primary); }
+    .item-detail { font-size: 0.78rem; color: var(--text-muted); }
+    .item-actions { display: flex; gap: 6px; }
+
+    /* QUADRO DE TOTAL */
+    .total-box {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 15px;
+      text-align: right;
+      background: #f0fdf4;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* TABELAS */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* BADGES */
+    .badge {
+      background: #e2e8f0;
+      color: #334155;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-auto {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    /* DASHBOARD / CARDS DE DASHBOARD */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .dash-card {
+      background: white;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .dash-card .title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .dash-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 6px;
+    }
+
+    /* ÁREA DE IMPRESSÃO DO PDF (INVISÍVEL NA TELA) */
+    #printArea {
+      display: none;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 20px;
+        background: white;
+        color: black;
+        font-family: Arial, sans-serif;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Botão flutuante para reexibir o cabeçalho/menu quando ocultado -->
-    <button id="btn-show-header" class="btn btn-primary btn-sm menu-bar-trigger rounded-pill px-3 py-2 fw-bold" onclick="showHeader()" title="Clique para exibir o Menu">
-        <i class="fa-solid fa-bars me-2"></i> Menu
-    </button>
+  <!-- BARRA SUPERIOR COMPACTA (OCULTADA DINAMICAMENTE) -->
+  <header class="topbar" id="mainTopbar">
+    <div class="topbar-brand">
+      <button class="btn-toggle-menu" onclick="openSidebar()">
+        <i class="fa-solid fa-bars"></i>
+        <span>Menu</span>
+      </button>
+      <span class="brand-title"><i class="fa-solid fa-couch"></i> Riso Estofados</span>
+    </div>
+    <div class="topbar-info">
+      <span><i class="fa-solid fa-location-dot"></i> João Paulo II - João Pessoa</span>
+    </div>
+  </header>
 
-    <header class="app-navbar py-2 px-3 sticky-top" id="main-header">
-        <div class="container-fluid d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                    <i class="fa-solid fa-couch fs-5"></i>
-                </div>
-                <div>
-                    <h5 class="m-0 fw-bold text-white">Riso Estofados</h5>
-                    <span class="extra-small text-white-50" style="font-size: 0.75rem;">R. Irani Almeida de Menezes, 2 - Cidade dos Funcionários II, João Pessoa - PB</span>
-                </div>
-            </div>
+  <!-- BOTÃO FLUTUANTE DE MENU (SURGE AO OCULTAR O TOPBAR) -->
+  <button class="btn-floating-menu hide" id="floatingMenuBtn" onclick="openSidebar()">
+    <i class="fa-solid fa-bars"></i> Menu
+  </button>
 
-            <!-- Navigation Pills -->
-            <nav class="nav nav-pills gap-1 flex-wrap justify-content-center">
-                <button class="nav-link active" onclick="switchTab('orcamento', this)">
-                    <i class="fa-solid fa-calculator me-1"></i> Novo Orçamento
-                </button>
-                <button class="nav-link" onclick="switchTab('materiais', this)">
-                    <i class="fa-solid fa-boxes-stacked me-1"></i> Banco de Materiais
-                </button>
-                <button class="nav-link" onclick="switchTab('historico', this)">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i> Histórico
-                </button>
-                <button class="nav-link" onclick="switchTab('relatorios', this)">
-                    <i class="fa-solid fa-chart-line me-1"></i> Relatório Financeiro
-                </button>
-            </nav>
+  <!-- SIDEBAR LATERAL (OFFCANVAS) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()">
+    <div class="sidebar" onclick="event.stopPropagation()">
+      <div class="sidebar-header">
+        <h2>Riso Estofados</h2>
+        <button class="btn-close-sidebar" onclick="closeSidebar()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
 
-            <button class="btn btn-sm btn-outline-light rounded-circle" onclick="toggleDarkMode()" title="Alternar Modo Escuro">
-                <i class="fa-solid fa-moon" id="theme-icon"></i>
-            </button>
+      <ul class="sidebar-nav">
+        <li>
+          <button id="nav-orcamento" class="active" onclick="switchTab('orcamento')">
+            <i class="fa-solid fa-calculator"></i> Novo Orçamento
+          </button>
+        </li>
+        <li>
+          <button id="nav-materiais" onclick="switchTab('materiais')">
+            <i class="fa-solid fa-boxes-stacked"></i> Banco de Materiais
+          </button>
+        </li>
+        <li>
+          <button id="nav-historico" onclick="switchTab('historico')">
+            <i class="fa-solid fa-clock-rotate-left"></i> Histórico
+          </button>
+        </li>
+        <li>
+          <button id="nav-relatorio" onclick="switchTab('relatorio')">
+            <i class="fa-solid fa-chart-line"></i> Relatório Financeiro
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <p><strong>Riso Estofados & Tapeçaria</strong></p>
+        <p>Atendimento: (83) 99185-1475</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ABA 1: MONTAR ORÇAMENTO -->
+    <div id="tab-orcamento" class="grid-2">
+      
+      <!-- FORMULÁRIO -->
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-file-signature"></i> Montar Orçamento Rápido</h2>
+          <button class="btn btn-dark btn-sm" onclick="switchTab('materiais')">
+            <i class="fa-solid fa-gear"></i> Preços
+          </button>
         </div>
-    </header>
 
-    <!-- Main Workspace -->
-    <main class="container-fluid p-3 p-md-4 flex-grow-1">
-
-        <!-- TAB 1: NOVO ORÇAMENTO -->
-        <section id="tab-orcamento" class="tab-pane-content active">
-            <div class="row g-3">
-                
-                <!-- Left Column: Form & Item Selection -->
-                <div class="col-12 col-lg-7">
-                    <div class="card-custom">
-                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-                            <h5 class="fw-bold m-0 text-primary"><i class="fa-solid fa-pen-to-square me-2"></i>Montar Orçamento de Estofado</h5>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="openMaterialModal()">
-                                <i class="fa-solid fa-gear me-1"></i>Gerenciar Banco
-                            </button>
-                        </div>
-
-                        <!-- Cliente e WhatsApp -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-semibold small mb-1">Nome do Cliente:</label>
-                                <input type="text" id="orc-cliente" class="form-control" placeholder="Ex: Maria Silva" oninput="updateSummary()">
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-semibold small mb-1">WhatsApp (com DDD):</label>
-                                <input type="tel" id="orc-telefone" class="form-control" placeholder="Ex: 83988887777">
-                            </div>
-                        </div>
-
-                        <!-- Bairro e Frete -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small mb-1">Bairro de Entrega em João Pessoa (Sede: João Paulo II):</label>
-                            <select id="orc-bairro" class="form-select" onchange="calculateFreight()">
-                                <!-- Dynamic Options -->
-                            </select>
-                        </div>
-
-                        <!-- Categorias e Materiais -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-semibold small mb-1">1. Categoria:</label>
-                                <select id="orc-categoria-sel" class="form-select" onchange="filterMaterialsByCategory()">
-                                    <option value="todos">-- Todas as Categorias --</option>
-                                    <option value="Tecidos">Tecidos</option>
-                                    <option value="Espumas">Espumas</option>
-                                    <option value="Colas e Adesivos">Colas e Adesivos</option>
-                                    <option value="Grampos e Fixadores">Grampos e Fixadores</option>
-                                    <option value="Linhas e Costura">Linhas e Costura</option>
-                                    <option value="Estrutura e Suporte">Estrutura e Suporte</option>
-                                    <option value="Outros Insumos">Outros Insumos</option>
-                                </select>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-semibold small mb-1">2. Material / Insumo:</label>
-                                <select id="orc-material-sel" class="form-select" onchange="onSelectMaterial()">
-                                    <!-- Dynamic Options -->
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Campos Dinâmicos de Espuma -->
-                        <div id="espuma-campos" class="p-3 bg-body-tertiary border rounded-3 mb-3" style="display: none;">
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label class="form-label fw-semibold small mb-1">Densidade:</label>
-                                    <select id="espuma-densidade" class="form-select form-select-sm" onchange="calculateFoamPrice()">
-                                        <option value="D20">D20</option>
-                                        <option value="D23">D23</option>
-                                        <option value="D26">D26</option>
-                                        <option value="D28">D28</option>
-                                        <option value="D33" selected>D33 (Padrão Sofás)</option>
-                                        <option value="D45">D45 (Alta Firmeza)</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label fw-semibold small mb-1">Espessura (cm):</label>
-                                    <input type="number" id="espuma-espessura" class="form-control form-control-sm" value="5" min="1" max="30" oninput="calculateFoamPrice()">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Preço Unitário e Quantidade Editáveis -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label fw-semibold small mb-1">Preço Unitário (R$) <span class="text-muted fw-normal">(Editável)</span>:</label>
-                                <input type="number" id="orc-preco-unit" class="form-control" step="0.01" value="0.00">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-semibold small mb-1">Quantidade / Metragem:</label>
-                                <input type="number" id="orc-qtd" class="form-control" value="1" min="0.1" step="0.1">
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary w-100 py-2 fw-bold mb-3" onclick="addItemToQuote()">
-                            <i class="fa-solid fa-plus me-1"></i> Adicionar Material ao Orçamento
-                        </button>
-
-                        <!-- Mão de Obra e Observações -->
-                        <div class="row g-2">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-semibold small mb-1">Mão de Obra / Tapeçaria (R$):</label>
-                                <input type="number" id="orc-maodeobra" class="form-control" value="250.00" step="10" oninput="updateSummary()">
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-semibold small mb-1">Observações do Serviço:</label>
-                                <input type="text" id="orc-obs" class="form-control" placeholder="Ex: Reforma retrátil, troca de percintas">
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Right Column: Resumo & Ações -->
-                <div class="col-12 col-lg-5">
-                    <div class="card-custom sticky-top" style="top: 80px;">
-                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-                            <h5 class="fw-bold m-0 text-success"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Resumo do Orçamento</h5>
-                            <span class="badge bg-secondary">Oficina JP II</span>
-                        </div>
-
-                        <div class="small mb-2" id="resumo-cliente-lbl"><strong>Cliente:</strong> Não informado</div>
-                        <div class="small mb-3" id="resumo-bairro-lbl"><strong>Entrega:</strong> João Paulo II</div>
-
-                        <!-- Itemized List -->
-                        <div class="border rounded-3 p-2 bg-body-tertiary mb-3" style="max-height: 220px; overflow-y: auto;">
-                            <ul class="list-group list-group-flush extra-small" id="lista-itens-orcamento">
-                                <li class="list-group-item text-center text-muted bg-transparent py-3">Nenhum item adicionado ainda.</li>
-                            </ul>
-                        </div>
-
-                        <!-- Financial Summary Box -->
-                        <div class="total-box mb-3">
-                            <div class="small text-muted fw-bold">VALOR TOTAL ESTIMADO</div>
-                            <h2 class="fw-bold text-success m-0">R$ <span id="lbl-valor-total">0.00</span></h2>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-success fw-bold text-white py-2" onclick="sendWhatsApp()">
-                                <i class="fa-brands fa-whatsapp me-2 fs-5 align-middle"></i> Enviar para o WhatsApp
-                            </button>
-                            <button class="btn btn-primary fw-bold py-2" onclick="openPDFModal()">
-                                <i class="fa-solid fa-file-pdf me-2"></i> Gerar PDF / Imprimir Proposta
-                            </button>
-                            <button class="btn btn-outline-secondary fw-semibold py-2" onclick="saveQuote()">
-                                <i class="fa-solid fa-floppy-disk me-2"></i> Salvar no Histórico
-                            </button>
-                            <button class="btn btn-link text-danger btn-sm text-decoration-none" onclick="clearCurrentQuote()">
-                                <i class="fa-solid fa-trash me-1"></i> Limpar Formulário
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- TAB 2: BANCO DE MATERIAIS -->
-        <section id="tab-materiais" class="tab-pane-content">
-            <div class="card-custom">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 border-bottom pb-3 mb-3">
-                    <div>
-                        <h4 class="fw-bold m-0 text-primary"><i class="fa-solid fa-boxes-stacked me-2"></i>Banco de Materiais & Insumos</h4>
-                        <p class="text-muted small m-0">Cadastre, edite e atualize preços de tabela da estofaria</p>
-                    </div>
-                    <button class="btn btn-primary rounded-pill px-4" onclick="openMaterialModal()">
-                        <i class="fa-solid fa-plus me-1"></i> Cadastrar Novo Material
-                    </button>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Categoria</th>
-                                <th>Nome do Material</th>
-                                <th>Preço Padrão (R$)</th>
-                                <th>Unidade</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-banco-materiais">
-                            <!-- Dynamic Content -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 3: HISTÓRICO DE ORÇAMENTOS -->
-        <section id="tab-historico" class="tab-pane-content">
-            <div class="card-custom">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 border-bottom pb-3 mb-3">
-                    <div>
-                        <h4 class="fw-bold m-0 text-primary"><i class="fa-solid fa-clock-rotate-left me-2"></i>Histórico de Orçamentos Salvos</h4>
-                        <p class="text-muted small m-0">Consulte, recarregue e gerencie o status das propostas</p>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Cliente</th>
-                                <th>Bairro</th>
-                                <th>Total (R$)</th>
-                                <th>Status</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-historico-orcamentos">
-                            <!-- Dynamic Content -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 4: RELATÓRIO FINANCEIRO -->
-        <section id="tab-relatorios" class="tab-pane-content">
-            <!-- KPI Cards Row -->
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="card-custom p-3 border-start border-primary border-4">
-                        <span class="text-muted small fw-bold d-block">FATURAMENTO TOTAL</span>
-                        <h3 class="fw-bold text-primary my-1" id="kpi-faturamento">R$ 0.00</h3>
-                        <span class="extra-small text-muted">Aprovados & Concluídos</span>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="card-custom p-3 border-start border-danger border-4">
-                        <span class="text-muted small fw-bold d-block">GASTO COM MATERIAIS</span>
-                        <h3 class="fw-bold text-danger my-1" id="kpi-materiais">R$ 0.00</h3>
-                        <span class="extra-small text-muted">Custo de Insumos</span>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="card-custom p-3 border-start border-info border-4">
-                        <span class="text-muted small fw-bold d-block">RECEITA MÃO DE OBRA</span>
-                        <h3 class="fw-bold text-info my-1" id="kpi-maodeobra">R$ 0.00</h3>
-                        <span class="extra-small text-muted">Serviço de Tapeçaria</span>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="card-custom p-3 border-start border-success border-4">
-                        <span class="text-muted small fw-bold d-block">LUCRO LÍQUIDO ESTIMADO</span>
-                        <h3 class="fw-bold text-success my-1" id="kpi-lucro">R$ 0.00</h3>
-                        <span class="extra-small text-muted">Receita Menos Despesas</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Expense Logger & Transactions Table -->
-            <div class="row g-3">
-                <div class="col-12 col-lg-5">
-                    <div class="card-custom">
-                        <h5 class="fw-bold border-bottom pb-2 mb-3 text-primary"><i class="fa-solid fa-minus-circle me-2 text-danger"></i>Lançar Despesa da Oficina</h5>
-                        <form id="form-despesa" onsubmit="event.preventDefault(); saveExpense();">
-                            <div class="mb-2">
-                                <label class="form-label fw-semibold small mb-1">Descrição da Despesa:</label>
-                                <input type="text" id="despesa-nome" class="form-control" placeholder="Ex: Aluguel, Energia, Compra de Ferramenta" required>
-                            </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label fw-semibold small mb-1">Valor (R$):</label>
-                                    <input type="number" id="despesa-valor" class="form-control" step="0.01" required>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label fw-semibold small mb-1">Categoria:</label>
-                                    <select id="despesa-categoria" class="form-select">
-                                        <option value="Insumos">Insumos Extra</option>
-                                        <option value="Fixos">Custos Fixos</option>
-                                        <option value="Manutenção">Manutenção</option>
-                                        <option value="Outros">Outros</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-danger w-100 fw-bold">
-                                <i class="fa-solid fa-plus me-1"></i> Registrar Despesa
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-7">
-                    <div class="card-custom">
-                        <h5 class="fw-bold border-bottom pb-2 mb-3 text-primary"><i class="fa-solid fa-list-check me-2"></i>Extrato de Lançamentos & Despesas</h5>
-                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                            <table class="table table-sm align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Descrição</th>
-                                        <th>Tipo</th>
-                                        <th>Valor (R$)</th>
-                                        <th class="text-end">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabela-extrato-financeiro">
-                                    <!-- Dynamic Rows -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- MODAL: GERENCIAR/CADASTRAR MATERIAL -->
-    <div class="modal fade" id="modalMaterial" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="modalMaterialTitle">Cadastrar Material</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form onsubmit="event.preventDefault(); saveMaterialFromModal();">
-                    <div class="modal-body p-4">
-                        <input type="hidden" id="edit-mat-index" value="-1">
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">Categoria:</label>
-                            <select id="cad-categoria" class="form-select" required>
-                                <option value="Tecidos">Tecidos</option>
-                                <option value="Espumas">Espumas</option>
-                                <option value="Colas e Adesivos">Colas e Adesivos</option>
-                                <option value="Grampos e Fixadores">Grampos e Fixadores</option>
-                                <option value="Linhas e Costura">Linhas e Costura</option>
-                                <option value="Estrutura e Suporte">Estrutura e Suporte</option>
-                                <option value="Outros Insumos">Outros Insumos</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">Nome do Material:</label>
-                            <input type="text" id="cad-nome" class="form-control" placeholder="Ex: Suede Bouclé, Grampo 80/12" required>
-                        </div>
-
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="form-label fw-semibold small">Preço Padrão (R$):</label>
-                                <input type="number" id="cad-preco" class="form-control" step="0.01" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-semibold small">Unidade:</label>
-                                <select id="cad-unidade" class="form-select">
-                                    <option value="metro">Metro (m)</option>
-                                    <option value="unid">Unidade (un)</option>
-                                    <option value="rolo">Rolo</option>
-                                    <option value="caixa">Caixa / Pacote</option>
-                                    <option value="lata">Lata / Galão</option>
-                                    <option value="espuma">Calculado (Espuma)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4">Salvar no Cadastro</button>
-                    </div>
-                </form>
-            </div>
+        <div class="row">
+          <div class="col">
+            <label for="cliente">Nome do Cliente:</label>
+            <input type="text" id="cliente" placeholder="Ex: Maria Silva" oninput="atualizarResumo()">
+          </div>
+          <div class="col">
+            <label for="telefone">WhatsApp (com DDD):</label>
+            <input type="tel" id="telefone" placeholder="83991851475">
+          </div>
         </div>
+
+        <label for="bairro">Bairro de Entrega (João Pessoa):</label>
+        <select id="bairro" onchange="calcularFrete()"></select>
+
+        <!-- AVISO DE INSUMOS AUTOMÁTICOS -->
+        <div class="auto-items-badge">
+          <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
+          <div>
+            <strong>Insumos básicos de oficina incluídos:</strong><br>
+            1x Lata de Cola, 1x Caixa de Grampo e 1x Tubo de Linha (já somados no orçamento).
+          </div>
+        </div>
+
+        <!-- CATEGORIAS SIMPLIFICADAS PARA SELEÇÃO -->
+        <label>Escolha o Material a Adicionar:</label>
+        <div class="quick-category-tabs">
+          <button class="cat-tab-btn active" id="btnCat-Tecidos" onclick="selecionarCategoriaDireta('Tecidos')">
+            🛋️ Tecidos
+          </button>
+          <button class="cat-tab-btn" id="btnCat-Espumas" onclick="selecionarCategoriaDireta('Espumas')">
+            🧽 Espumas
+          </button>
+          <button class="cat-tab-btn" id="btnCat-Estrutura" onclick="selecionarCategoriaDireta('Estrutura e Suporte')">
+            🎗️ Ligas & Percintas
+          </button>
+          <button class="cat-tab-btn" id="btnCat-Molas" onclick="selecionarCategoriaDireta('Molas')">
+            🌀 Molas
+          </button>
+          <button class="cat-tab-btn" id="btnCat-Madeira" onclick="selecionarCategoriaDireta('Madeira')">
+            🪵 Madeira
+          </button>
+        </div>
+
+        <!-- SELEÇÃO DE ITEM ESPECÍFICO -->
+        <label for="materialSel">Selecione o Insumo:</label>
+        <select id="materialSel" onchange="aoSelecionarMaterial()"></select>
+
+        <!-- CAMPOS DINÂMICOS DE ESPUMA (APARECEM APENAS QUANDO FOR ESPUMA) -->
+        <div id="espumaCampos" style="display: none; background: #f1f5f9; padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px solid #cbd5e1;">
+          <div class="row">
+            <div class="col">
+              <label for="densidade">Densidade:</label>
+              <select id="densidade" onchange="calcularPrecoEspumaDinamico()">
+                <option value="D20">D20</option>
+                <option value="D23">D23</option>
+                <option value="D26">D26</option>
+                <option value="D28">D28</option>
+                <option value="D33" selected>D33 (Padrão Assento)</option>
+                <option value="D45">D45 (Alta Densidade)</option>
+              </select>
+            </div>
+            <div class="col">
+              <label for="espessura">Espessura (cm):</label>
+              <input type="number" id="espessura" value="5" min="1" max="30" oninput="calcularPrecoEspumaDinamico()">
+            </div>
+          </div>
+        </div>
+
+        <!-- EDIÇÃO DE PREÇO E QTD -->
+        <div class="row">
+          <div class="col">
+            <label for="precoUnitarioInput">Preço Unitário (R$):</label>
+            <input type="number" id="precoUnitarioInput" step="0.01" value="0.00">
+          </div>
+          <div class="col">
+            <label for="qtdInput">Quantidade / Metragem:</label>
+            <input type="number" id="qtdInput" value="1" min="0.1" step="0.1">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="adicionarItemAoOrcamento()">
+          <i class="fa-solid fa-plus"></i> Adicionar Item ao Orçamento
+        </button>
+
+        <label for="maoDeObra">Serviço / Mão de Obra de Tapeçaria (R$):</label>
+        <input type="number" id="maoDeObra" value="250.00" step="10" oninput="atualizarResumo()">
+      </div>
+
+      <!-- RESUMO DA COTAÇÃO -->
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-list-check"></i> Resumo do Orçamento</h2>
+          <span class="badge">Sede: João Paulo II</span>
+        </div>
+
+        <p id="resumoCliente"><strong>Cliente:</strong> Não informado</p>
+        <p id="resumoBairro"><strong>Entrega:</strong> João Paulo II</p>
+
+        <ul class="item-list" id="listaItens"></ul>
+
+        <div class="total-box">
+          Total: R$ <span id="valorTotal">0.00</span>
+        </div>
+
+        <button class="btn btn-save" onclick="salvarOrcamento()">
+          <i class="fa-solid fa-floppy-disk"></i> Salvar no Histórico
+        </button>
+        <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">
+          <i class="fa-brands fa-whatsapp"></i> Enviar Orçamento no WhatsApp
+        </button>
+        <button class="btn btn-dark" style="width: 100%; margin-top: 8px;" onclick="gerarPDFImpressao()">
+          <i class="fa-solid fa-print"></i> Imprimir / PDF Oficial
+        </button>
+        <button class="btn btn-clear" onclick="limparOrcamentoAtual()">
+          <i class="fa-solid fa-trash"></i> Reiniciar Orçamento
+        </button>
+      </div>
+
     </div>
 
-    <!-- MODAL PREVIEW PDF COMERCIAL -->
-    <div class="modal fade" id="modalPDFPreview" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-pdf me-2"></i>Proposta Comercial - Riso Estofados</h5>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light btn-sm fw-bold" onclick="downloadPDF()">
-                            <i class="fa-solid fa-download me-1 text-primary"></i> Baixar PDF
-                        </button>
-                        <button type="button" class="btn btn-outline-light btn-sm" onclick="window.print()">
-                            <i class="fa-solid fa-print me-1"></i> Imprimir
-                        </button>
-                        <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal"></button>
-                    </div>
-                </div>
-                <div class="modal-body p-0 bg-secondary bg-opacity-10">
-                    <div id="pdf-printable-wrapper" class="mx-auto my-3 shadow-sm rounded-2" style="max-width: 750px; background: white;">
-                        <div id="pdf-template">
-                            <!-- PDF Header -->
-                            <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
-                                <div>
-                                    <h2 class="fw-bold text-primary m-0">RISO ESTOFADOS</h2>
-                                    <p class="text-muted small m-0">Especialistas em Reforma e Estofamento Profissional</p>
-                                    <div class="extra-small text-muted mt-1">Endereço: R. Irani Almeida de Menezes, 2 - Cidade dos Funcionários II, João Pessoa - PB, 58078-010 | Tel/WhatsApp: (83) 99185-1475</div>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge bg-primary fs-6 px-3 py-2" id="pdf-orc-id">ORÇ-001</span>
-                                    <div class="small text-muted mt-1">Data: <strong id="pdf-orc-data">00/00/0000</strong></div>
-                                </div>
-                            </div>
+    <!-- ABA 2: BANCO DE MATERIAIS -->
+    <div id="tab-materiais" class="card full-width" style="display: none;">
+      <div class="card-header">
+        <h2><i class="fa-solid fa-boxes-stacked"></i> Gerenciar Banco de Materiais e Preços</h2>
+      </div>
 
-                            <!-- Client Info -->
-                            <div class="bg-light p-3 rounded-3 mb-4 border">
-                                <h6 class="fw-bold text-primary border-bottom pb-1 mb-2">DADOS DO CLIENTE & ENTREGA</h6>
-                                <div class="row g-2 small">
-                                    <div class="col-6"><strong>Cliente:</strong> <span id="pdf-cliente-nome">-</span></div>
-                                    <div class="col-6"><strong>WhatsApp:</strong> <span id="pdf-cliente-fone">-</span></div>
-                                    <div class="col-12"><strong>Local de Entrega:</strong> <span id="pdf-bairro-nome">-</span></div>
-                                </div>
-                            </div>
+      <!-- FORMULÁRIO DE CADASTRO -->
+      <div style="background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+        <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 12px;">Cadastrar ou Editar Insumo</h3>
+        <input type="hidden" id="editMaterialIndex" value="-1">
 
-                            <!-- Itemized Table -->
-                            <h6 class="fw-bold text-primary border-bottom pb-1 mb-2">DISCRIMINAÇÃO DE MATERIAIS & SERVIÇOS</h6>
-                            <div class="table-responsive mb-4">
-                                <table class="table table-bordered table-sm align-middle small">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Item / Descrição</th>
-                                            <th class="text-center" style="width: 80px;">Qtd/Metros</th>
-                                            <th class="text-end" style="width: 110px;">Valor Unit.</th>
-                                            <th class="text-end" style="width: 110px;">Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pdf-tabela-itens">
-                                        <!-- Dynamic Rows -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Summary & Payment Terms -->
-                            <div class="row align-items-center mb-4">
-                                <div class="col-7 small">
-                                    <div><strong>Prazo de Entrega:</strong> 15 dias, podendo variar a depender da complexidade</div>
-                                    <div><strong>Condições:</strong> 50% de sinal + 50% na entrega do estofado</div>
-                                    <div class="text-muted extra-small mt-1" id="pdf-obs-lbl"></div>
-                                </div>
-                                <div class="col-5">
-                                    <div class="p-3 bg-primary bg-opacity-10 border border-primary rounded-3 text-end">
-                                        <div class="small text-uppercase fw-bold text-muted">Valor Total da Proposta</div>
-                                        <h3 class="fw-bold text-primary m-0" id="pdf-total-val">R$ 0,00</h3>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Signatures -->
-                            <div class="row mt-5 pt-4 text-center extra-small">
-                                <div class="col-6">
-                                    <div class="border-top pt-2 mx-4">Riso Estofados (Oficina)</div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="border-top pt-2 mx-4">Assinatura do Cliente</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="row">
+          <div class="col">
+            <label for="cadCategoria">Categoria:</label>
+            <select id="cadCategoria">
+              <option value="Tecidos">Tecidos</option>
+              <option value="Espumas">Espumas</option>
+              <option value="Estrutura e Suporte">Estrutura e Suporte / Ligas</option>
+              <option value="Molas">Molas</option>
+              <option value="Madeira">Madeira</option>
+              <option value="Colas e Adesivos">Colas e Adesivos</option>
+              <option value="Grampos e Fixadores">Grampos e Fixadores</option>
+              <option value="Linhas e Costura">Linhas e Costura</option>
+              <option value="Outros Insumos">Outros Insumos</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="cadNome">Nome do Insumo / Material:</label>
+            <input type="text" id="cadNome" placeholder="Ex: Veludo Royale, Percinta Italiana">
+          </div>
         </div>
+
+        <div class="row">
+          <div class="col">
+            <label for="cadPreco">Preço Padrão (R$):</label>
+            <input type="number" id="cadPreco" step="0.01" placeholder="0.00">
+          </div>
+          <div class="col">
+            <label for="cadUnidade">Unidade:</label>
+            <select id="cadUnidade">
+              <option value="metro">Metro (m)</option>
+              <option value="unid">Unidade (un)</option>
+              <option value="rolo">Rolo</option>
+              <option value="caixa">Caixa / Pacote</option>
+              <option value="lata">Lata / Galão</option>
+              <option value="espuma">Calculado (Espuma)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top: 15px;">
+          <button class="btn btn-secondary" style="flex:1;" onclick="salvarNovoMaterial()">
+            <i class="fa-solid fa-check"></i> Salvar Insumo
+          </button>
+          <button class="btn btn-clear" style="width: auto;" onclick="limparFormularioCadastro()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Nome</th>
+              <th>Preço Padrão</th>
+              <th>Unidade</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaMateriaisCadastrados"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ABA 3: HISTÓRICO DE ORÇAMENTOS -->
+    <div id="tab-historico" class="card full-width" style="display: none;">
+      <div class="card-header">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Orçamentos Salvos</h2>
+      </div>
 
-    <script>
-        /* Default Initial Seed Data */
-        const defaultMaterials = [
-            { categoria: "Tecidos", nome: "Tecido - Suede Simples", preco: 25.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Suede Animale / Veludo", preco: 38.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Linho Rústico", preco: 55.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Couro Sintético Corino", preco: 35.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Couro Facto", preco: 65.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Acquablock Impermeável", preco: 58.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Jacquard", preco: 48.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Chenille", preco: 42.00, unidade: "metro" },
-            { categoria: "Tecidos", nome: "Tecido - Bouclé Organic", preco: 85.00, unidade: "metro" },
-            
-            { categoria: "Espumas", nome: "Espuma Sob Medida (Densidade/Espessura)", preco: 0, unidade: "espuma" },
-            
-            { categoria: "Colas e Adesivos", nome: "Cola de Contato Spray (Lata 500ml)", preco: 45.00, unidade: "lata" },
-            { categoria: "Colas e Adesivos", nome: "Cola de Contato Líquida (Galão 3.6L)", preco: 130.00, unidade: "lata" },
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Cliente</th>
+              <th>Bairro</th>
+              <th>Total (R$)</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaHistorico"></tbody>
+        </table>
+      </div>
+    </div>
 
-            { categoria: "Grampos e Fixadores", nome: "Grampo Galvanizado 80/10 (Caixa 5000un)", preco: 28.00, unidade: "caixa" },
-            { categoria: "Grampos e Fixadores", nome: "Grampo Galvanizado 80/12 (Caixa 5000un)", preco: 32.00, unidade: "caixa" },
+    <!-- ABA 4: RELATÓRIO FINANCEIRO -->
+    <div id="tab-relatorio" style="display: none;">
+      
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="title">Receita Total Entrada</div>
+          <div class="value" style="color: #16a34a;" id="dashEntrada">R$ 0,00</div>
+        </div>
+        <div class="dash-card">
+          <div class="title">Gasto com Materiais</div>
+          <div class="value" style="color: #dc2626;" id="dashGastoMateriais">R$ 0,00</div>
+        </div>
+        <div class="dash-card">
+          <div class="title">Receita de Mão de Obra</div>
+          <div class="value" style="color: #2563eb;" id="dashMaoDeObra">R$ 0,00</div>
+        </div>
+        <div class="dash-card">
+          <div class="title">Lucro Líquido Real</div>
+          <div class="value" style="color: #0284c7;" id="dashLucroLiquido">R$ 0,00</div>
+        </div>
+      </div>
 
-            { categoria: "Linhas e Costura", nome: "Linha de Nylon Pesada nº 40 (Cone)", preco: 22.00, unidade: "rolo" },
-            { categoria: "Linhas e Costura", nome: "Linha Poliéster de Alta Resistência", preco: 18.00, unidade: "rolo" },
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fa-solid fa-minus-circle"></i> Registrar Despesa da Oficina</h2>
+          </div>
+          <label for="descDespesa">Descrição da Despesa:</label>
+          <input type="text" id="descDespesa" placeholder="Ex: Energia, Aluguel, Ferramentas">
+          
+          <label for="valorDespesa">Valor (R$):</label>
+          <input type="number" id="valorDespesa" step="0.01" placeholder="0.00">
 
-            { categoria: "Estrutura e Suporte", nome: "Percinta Elástica / Liga Italiana (Metro)", preco: 6.50, unidade: "metro" },
-            { categoria: "Estrutura e Suporte", nome: "Molas Zig-Zag / No-Sag (Unidade)", preco: 12.00, unidade: "unid" },
-            { categoria: "Estrutura e Suporte", nome: "Madeira Eucalipto Tratada (Metro Ripa)", preco: 15.00, unidade: "metro" },
+          <button class="btn btn-danger" style="width: 100%; margin-top: 15px;" onclick="adicionarDespesaOficina()">
+            <i class="fa-solid fa-plus"></i> Registrar Despesa
+          </button>
+        </div>
 
-            { categoria: "Outros Insumos", nome: "Acrilon / Manta Acrílica 150g (Metro)", preco: 14.00, unidade: "metro" },
-            { categoria: "Outros Insumos", nome: "TNT Gramatura 80 Preto (Metro)", preco: 5.50, unidade: "metro" },
-            { categoria: "Outros Insumos", nome: "Pés de Madeira para Sofá (Unidade)", preco: 18.00, unidade: "unid" }
-        ];
-
-        const bairrosJP = [
-            { nome: "Cidade dos Funcionários II (Sede)", valor: 50.00 },
-            { nome: "João Paulo II", valor: 50.00 },
-            { nome: "Geisel", valor: 50.00 },
-            { nome: "Cristo Redentor", valor: 50.00 },
-            { nome: "Mangabeira", valor: 50.00 },
-            { nome: "Bancários", valor: 60.00 },
-            { nome: "José Américo", valor: 55.00 },
-            { nome: "Jaguaribe", valor: 60.00 },
-            { nome: "Centro", valor: 65.00 },
-            { nome: "Torre", valor: 65.00 },
-            { nome: "Epitácio Pessoa / Expedicionários", valor: 65.00 },
-            { nome: "Tambaú", valor: 80.00 },
-            { nome: "Cabo Branco", valor: 80.00 },
-            { nome: "Manaíra", valor: 80.00 },
-            { nome: "Bessa", valor: 85.00 },
-            { nome: "Intermares (Fronteira)", valor: 90.00 },
-            { nome: "Gramame / Colinas do Sul", valor: 65.00 }
-        ];
-
-        /* State Variables */
-        let materials = JSON.parse(localStorage.getItem('riso_materials')) || [...defaultMaterials];
-        let quotes = JSON.parse(localStorage.getItem('riso_quotes')) || [];
-        let expenses = JSON.parse(localStorage.getItem('riso_expenses')) || [];
-
-        let currentQuoteItems = [];
-        let currentFreight = 50.00;
-        let currentNeighborhood = "Cidade dos Funcionários II (Sede)";
-
-        window.onload = function() {
-            populateFreightSelect();
-            filterMaterialsByCategory();
-            renderMaterialsTable();
-            renderHistoryTable();
-            renderFinancialReports();
-        };
-
-        function switchTab(tabId, btnElement) {
-            showHeader();
-            document.querySelectorAll('.tab-pane-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-pills .nav-link').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById('tab-' + tabId).classList.add('active');
-            if (btnElement) btnElement.classList.add('active');
-        }
-
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-bs-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-bs-theme', next);
-            document.getElementById('theme-icon').className = next === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-        }
-
-        function saveStorage() {
-            localStorage.setItem('riso_materials', JSON.stringify(materials));
-            localStorage.setItem('riso_quotes', JSON.stringify(quotes));
-            localStorage.setItem('riso_expenses', JSON.stringify(expenses));
-        }
-
-        function populateFreightSelect() {
-            const select = document.getElementById('orc-bairro');
-            select.innerHTML = '';
-            bairrosJP.forEach(b => {
-                const opt = document.createElement('option');
-                opt.value = b.valor;
-                opt.dataset.nome = b.nome;
-                opt.textContent = `${b.nome} - Frete: R$ ${b.valor.toFixed(2)}`;
-                select.appendChild(opt);
-            });
-            calculateFreight();
-        }
-
-        function calculateFreight() {
-            const select = document.getElementById('orc-bairro');
-            currentFreight = parseFloat(select.value);
-            currentNeighborhood = select.options[select.selectedIndex]?.dataset.nome || "João Paulo II";
-            document.getElementById('resumo-bairro-lbl').innerHTML = `<strong>Entrega:</strong> ${currentNeighborhood}`;
-            updateSummary();
-        }
-
-        function hideHeader() {
-            const header = document.getElementById('main-header');
-            const menuBtn = document.getElementById('btn-show-header');
-            if (header && menuBtn) {
-                header.classList.add('header-hidden');
-                menuBtn.classList.add('visible');
-            }
-        }
-
-        function showHeader() {
-            const header = document.getElementById('main-header');
-            const menuBtn = document.getElementById('btn-show-header');
-            if (header && menuBtn) {
-                header.classList.remove('header-hidden');
-                menuBtn.classList.remove('visible');
-            }
-        }
-
-        function filterMaterialsByCategory() {
-            const cat = document.getElementById('orc-categoria-sel').value;
-
-            // Oculta o cabeçalho ao selecionar qualquer categoria
-            if (cat && cat !== 'todos') {
-                hideHeader();
-            }
-
-            const select = document.getElementById('orc-material-sel');
-            select.innerHTML = '';
-
-            const filtered = materials.filter(m => cat === 'todos' || m.categoria === cat);
-
-            if (!filtered.length) {
-                select.innerHTML = '<option value="-1">Nenhum material cadastrado</option>';
-                return;
-            }
-
-            filtered.forEach((m) => {
-                const realIdx = materials.indexOf(m);
-                const opt = document.createElement('option');
-                opt.value = realIdx;
-                opt.textContent = `[${m.categoria}] ${m.nome} - R$ ${m.preco.toFixed(2)} / ${m.unidade}`;
-                select.appendChild(opt);
-            });
-
-            onSelectMaterial();
-        }
-
-        function onSelectMaterial() {
-            const idx = parseInt(document.getElementById('orc-material-sel').value);
-            if (isNaN(idx) || idx < 0 || !materials[idx]) return;
-
-            const mat = materials[idx];
-            const isEspuma = mat.unidade === 'espuma';
-
-            document.getElementById('espuma-campos').style.display = isEspuma ? 'block' : 'none';
-
-            if (isEspuma) {
-                calculateFoamPrice();
-            } else {
-                document.getElementById('orc-preco-unit').value = mat.preco.toFixed(2);
-            }
-        }
-
-        function calculateFoamPrice() {
-            const density = document.getElementById('espuma-densidade').value;
-            const thickness = parseInt(document.getElementById('espuma-espessura').value) || 1;
-            const factors = { "D20": 18, "D23": 22, "D26": 26, "D28": 30, "D33": 38, "D45": 48 };
-            const computedPrice = (factors[density] || 30) * (thickness * 0.8);
-            document.getElementById('orc-preco-unit').value = computedPrice.toFixed(2);
-        }
-
-        function addItemToQuote() {
-            const idx = parseInt(document.getElementById('orc-material-sel').value);
-            if (isNaN(idx) || idx < 0 || !materials[idx]) {
-                alert('Selecione um material válido!');
-                return;
-            }
-
-            const mat = materials[idx];
-            const qty = parseFloat(document.getElementById('orc-qtd').value) || 1;
-            const unitPrice = parseFloat(document.getElementById('orc-preco-unit').value) || 0;
-
-            let description = mat.nome;
-            if (mat.unidade === 'espuma') {
-                const d = document.getElementById('espuma-densidade').value;
-                const e = document.getElementById('espuma-espessura').value;
-                description = `Espuma ${d} (${e} cm)`;
-            }
-
-            currentQuoteItems.push({
-                id: Date.now(),
-                description,
-                qty,
-                unitPrice,
-                subtotal: qty * unitPrice
-            });
-
-            updateSummary();
-        }
-
-        function removeItemFromQuote(itemId) {
-            currentQuoteItems = currentQuoteItems.filter(i => i.id !== itemId);
-            updateSummary();
-        }
-
-        function updateSummary() {
-            const clientName = document.getElementById('orc-cliente').value.trim() || 'Não informado';
-            document.getElementById('resumo-cliente-lbl').innerHTML = `<strong>Cliente:</strong> ${clientName}`;
-
-            const list = document.getElementById('lista-itens-orcamento');
-            list.innerHTML = '';
-
-            let totalMaterials = 0;
-
-            if (!currentQuoteItems.length) {
-                list.innerHTML = '<li class="list-group-item text-center text-muted bg-transparent py-3">Nenhum item adicionado ainda.</li>';
-            } else {
-                currentQuoteItems.forEach(item => {
-                    totalMaterials += item.subtotal;
-                    list.innerHTML += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 py-2">
-                            <div>
-                                <strong class="d-block text-dark">${item.description}</strong>
-                                <span class="text-muted">${item.qty}x R$ ${item.unitPrice.toFixed(2)} = R$ ${item.subtotal.toFixed(2)}</span>
-                            </div>
-                            <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="removeItemFromQuote(${item.id})">
-                                <i class="fa-solid fa-xmark fs-6"></i>
-                            </button>
-                        </li>
-                    `;
-                });
-            }
-
-            const labor = parseFloat(document.getElementById('orc-maodeobra').value) || 0;
-            
-            list.innerHTML += `
-                <li class="list-group-item bg-light text-dark fw-semibold mt-2 rounded-2 p-2">
-                    <div class="d-flex justify-content-between"><span>Tapeçaria (Mão de Obra):</span><span>R$ ${labor.toFixed(2)}</span></div>
-                    <div class="d-flex justify-content-between mt-1"><span>Frete (${currentNeighborhood}):</span><span>R$ ${currentFreight.toFixed(2)}</span></div>
-                </li>
-            `;
-
-            const grandTotal = totalMaterials + labor + currentFreight;
-            document.getElementById('lbl-valor-total').textContent = grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            return { totalMaterials, labor, currentFreight, grandTotal };
-        }
-
-        function clearCurrentQuote() {
-            currentQuoteItems = [];
-            document.getElementById('orc-cliente').value = '';
-            document.getElementById('orc-telefone').value = '';
-            document.getElementById('orc-obs').value = '';
-            updateSummary();
-        }
-
-        function sendWhatsApp() {
-            if (!currentQuoteItems.length) {
-                alert('Adicione materiais ao orçamento antes de enviar!');
-                return;
-            }
-
-            const client = document.getElementById('orc-cliente').value.trim() || 'Cliente';
-            const phone = document.getElementById('orc-telefone').value.replace(/\D/g, '');
-            const labor = parseFloat(document.getElementById('orc-maodeobra').value) || 0;
-
-            let msg = `*ORÇAMENTO DE REFORMA DE ESTOFADO - RISO ESTOFADOS*\n`;
-            msg += `📍 *Endereço:* R. Irani Almeida de Menezes, 2 - Cidade dos Funcionários II, João Pessoa - PB, 58078-010\n`;
-            msg += `📞 *Tel/WhatsApp:* (83) 99185-1475\n`;
-            msg += `👤 *Cliente:* ${client}\n\n`;
-            msg += `🛋️ *MATERIAIS E INSUMOS:*\n`;
-
-            let totalMaterials = 0;
-            currentQuoteItems.forEach(i => {
-                totalMaterials += i.subtotal;
-                msg += `• ${i.qty}x ${i.description} - R$ ${i.subtotal.toFixed(2)}\n`;
-            });
-
-            msg += `\n🛠️ *Mão de Obra:* R$ ${labor.toFixed(2)}\n`;
-            msg += `🚚 *Frete (${currentNeighborhood}):* R$ ${currentFreight.toFixed(2)}\n`;
-
-            const grandTotal = totalMaterials + labor + currentFreight;
-            msg += `\n💰 *VALOR TOTAL:* R$ ${grandTotal.toFixed(2)}\n\n`;
-            msg += `_Ficamos à disposição para agendar a busca do estofado!_`;
-
-            const url = phone 
-                ? `https://api.whatsapp.com/send?phone=55${phone}&text=${encodeURIComponent(msg)}`
-                : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-
-            window.open(url, '_blank');
-        }
-
-        function openPDFModal() {
-            if (!currentQuoteItems.length) {
-                alert('Adicione materiais ao orçamento antes de gerar o PDF!');
-                return;
-            }
-
-            const client = document.getElementById('orc-cliente').value.trim() || 'Cliente';
-            const phone = document.getElementById('orc-telefone').value || '-';
-            const obs = document.getElementById('orc-obs').value || '';
-            const calc = updateSummary();
-
-            document.getElementById('pdf-orc-id').innerText = 'ORÇ-' + Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('pdf-orc-data').innerText = new Date().toLocaleDateString('pt-BR');
-            document.getElementById('pdf-cliente-nome').innerText = client;
-            document.getElementById('pdf-cliente-fone').innerText = phone;
-            document.getElementById('pdf-bairro-nome').innerText = currentNeighborhood;
-            document.getElementById('pdf-obs-lbl').innerText = obs ? `Obs: ${obs}` : '';
-
-            const tbody = document.getElementById('pdf-tabela-itens');
-            tbody.innerHTML = '';
-
-            currentQuoteItems.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.description}</td>
-                        <td class="text-center">${item.qty}</td>
-                        <td class="text-end">R$ ${item.unitPrice.toFixed(2)}</td>
-                        <td class="text-end">R$ ${item.subtotal.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML += `
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fa-solid fa-receipt"></i> Lançamentos de Despesas</h2>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
                 <tr>
-                    <td>Mão de Obra de Tapeçaria & Costura</td>
-                    <td class="text-center">1</td>
-                    <td class="text-end">R$ ${calc.labor.toFixed(2)}</td>
-                    <td class="text-end">R$ ${calc.labor.toFixed(2)}</td>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
                 </tr>
-                <tr>
-                    <td>Frete e Logística de Entrega (${currentNeighborhood})</td>
-                    <td class="text-center">1</td>
-                    <td class="text-end">R$ ${calc.currentFreight.toFixed(2)}</td>
-                    <td class="text-end">R$ ${calc.currentFreight.toFixed(2)}</td>
-                </tr>
-            `;
+              </thead>
+              <tbody id="tabelaDespesas"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-            document.getElementById('pdf-total-val').innerText = 'R$ ' + calc.grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    </div>
 
-            new bootstrap.Modal(document.getElementById('modalPDFPreview')).show();
+  </div>
+
+  <!-- CONTAINER DE IMPRESSÃO / PDF COMERCIAL -->
+  <div id="printArea">
+    <div style="text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 20px;">
+      <h1 style="margin: 0; color: #1e293b; font-size: 24px;">RISO ESTOFADOS</h1>
+      <p style="margin: 4px 0; font-size: 13px; color: #475569;">Reforma, Fabricação e Tapeçaria em Geral</p>
+      <p style="margin: 2px 0; font-size: 11px; color: #64748b;">
+        R. Irani Almeida de Menezes, 2 - João Paulo II - João Pessoa - PB, 58078-010<br>
+        Telefone / WhatsApp: (83) 99185-1475
+      </p>
+    </div>
+
+    <div style="margin-bottom: 20px; font-size: 13px; line-height: 1.6;">
+      <p><strong>CLIENTE:</strong> <span id="pdfCliente">-</span></p>
+      <p><strong>TELEFONE:</strong> <span id="pdfTelefone">-</span></p>
+      <p><strong>BAIRRO DE ENTREGA:</strong> <span id="pdfBairro">-</span></p>
+      <p><strong>DATA:</strong> <span id="pdfData">-</span></p>
+    </div>
+
+    <h3 style="font-size: 14px; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-bottom: 10px;">DESCRIÇÃO DOS SERVIÇOS E MATERIAIS</h3>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+      <thead>
+        <tr style="background-color: #f1f5f9;">
+          <th style="border: 1px solid #cbd5e1; padding: 8px;">Item / Descrição</th>
+          <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Qtd</th>
+          <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;">Unitário</th>
+          <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="pdfTabelaItens"></tbody>
+    </table>
+
+    <div style="text-align: right; font-size: 13px; line-height: 1.8; margin-bottom: 25px;">
+      <p>Total em Insumos e Materiais: R$ <span id="pdfTotalMateriais">0.00</span></p>
+      <p>Mão de Obra de Tapeçaria: R$ <span id="pdfMaoObra">0.00</span></p>
+      <p>Frete e Transporte: R$ <span id="pdfFrete">0.00</span></p>
+      <p style="font-size: 16px; font-weight: bold; color: #1e293b; margin-top: 5px; border-top: 1px solid #1e293b; padding-top: 5px;">
+        VALOR TOTAL DO ORÇAMENTO: R$ <span id="pdfValorTotal">0.00</span>
+      </p>
+    </div>
+
+    <div style="font-size: 11px; color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 12px; margin-top: 30px;">
+      <p><strong>Prazo de Entrega:</strong> 15 dias, podendo variar a depender da complexidade do serviço.</p>
+      <p><strong>Forma de Pagamento:</strong> A combinar no momento da aprovação do serviço.</p>
+    </div>
+
+    <div style="margin-top: 50px; display: flex; justify-content: space-around; text-align: center; font-size: 11px;">
+      <div>
+        __________________________________________<br>
+        <strong>Riso Estofados</strong>
+      </div>
+      <div>
+        __________________________________________<br>
+        <strong>Assinatura do Cliente</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT COMPLETO -->
+  <script>
+    // MATERIAIS PADRÃO DO SISTEMA
+    const materiaisPadrao = [
+      // Tecidos
+      { categoria: "Tecidos", nome: "Tecido - Suede Simples", preco: 25.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Suede Animale / Veludo", preco: 38.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Linho Rústico", preco: 55.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Couro Sintético Corino", preco: 35.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Couro Facto", preco: 65.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Acquablock Impermeável", preco: 58.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Jacquard", preco: 48.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Chenille", preco: 42.00, unidade: "metro" },
+      { categoria: "Tecidos", nome: "Tecido - Sarja 100% Algodão", preco: 32.00, unidade: "metro" },
+      
+      // Espumas
+      { categoria: "Espumas", nome: "Espuma Sob Medida (Densidade/Espessura)", preco: 0, unidade: "espuma" },
+
+      // Estrutura / Ligas
+      { categoria: "Estrutura e Suporte", nome: "Percinta Elástica / Liga Italiana", preco: 6.50, unidade: "metro" },
+      { categoria: "Estrutura e Suporte", nome: "Manta Acrílica / Acrilon 150g", preco: 14.00, unidade: "metro" },
+      { categoria: "Estrutura e Suporte", nome: "TNT Gramatura 80 Preto", preco: 5.50, unidade: "metro" },
+
+      // Molas
+      { categoria: "Molas", nome: "Molas Zig-Zag / No-Sag", preco: 12.00, unidade: "unid" },
+      { categoria: "Molas", nome: "Molas Ensacadas (Módulo Sofá)", preco: 95.00, unidade: "unid" },
+
+      // Madeira
+      { categoria: "Madeira", nome: "Madeira Eucalipto Tratada (Ripa)", preco: 15.00, unidade: "metro" },
+      { categoria: "Madeira", nome: "Chapa de Compensado 10mm", preco: 85.00, unidade: "unid" },
+      
+      // Colas e Insumos
+      { categoria: "Colas e Adesivos", nome: "Cola de Contato Spray (Lata 500ml)", preco: 45.00, unidade: "lata" },
+      { categoria: "Grampos e Fixadores", nome: "Grampo Galvanizado 80/12 (Caixa 5000un)", preco: 32.00, unidade: "caixa" },
+      { categoria: "Linhas e Costura", nome: "Linha de Nylon Pesada nº 40 (Cone)", preco: 22.00, unidade: "rolo" }
+    ];
+
+    // FRETE POR BAIRRO DE JOÃO PESSOA (SEDE EM JOÃO PAULO II)
+    const bairrosJP = [
+      { nome: "João Paulo II (Sede)", valor: 50.00 },
+      { nome: "Cidade dos Funcionários II", valor: 50.00 },
+      { nome: "Geisel", valor: 50.00 },
+      { nome: "Cristo Redentor", valor: 50.00 },
+      { nome: "Mangabeira", valor: 50.00 },
+      { nome: "Ernesto Geisel", valor: 50.00 },
+      { nome: "Rangel", valor: 55.00 },
+      { nome: "Água Fria", valor: 55.00 },
+      { nome: "Bancários", valor: 60.00 },
+      { nome: "José Américo", valor: 55.00 },
+      { nome: "Jaguaribe", valor: 60.00 },
+      { nome: "Centro", valor: 65.00 },
+      { nome: "Torre", valor: 65.00 },
+      { nome: "Epitácio Pessoa / Expedicionários", valor: 65.00 },
+      { nome: "Tambaú", valor: 80.00 },
+      { nome: "Cabo Branco", valor: 80.00 },
+      { nome: "Manaíra", valor: 80.00 },
+      { nome: "Bessa", valor: 85.00 },
+      { nome: "Valentina Figueiredo", valor: 60.00 },
+      { nome: "Gramame / Colinas do Sul", valor: 65.00 }
+    ];
+
+    // ESTADO DA APLICAÇÃO
+    let materiais = [];
+    let itensOrcamento = [];
+    let despesasOficina = [];
+    let valorFreteAtual = 50.00;
+    let nomeBairroAtual = "João Paulo II (Sede)";
+    let categoriaAtualSelecionada = "Tecidos";
+
+    window.onload = () => {
+      carregarMateriais();
+      preencherSelectBairros();
+      carregarInsumosPadraoAutomaticos();
+      selecionarCategoriaDireta('Tecidos');
+      carregarHistorico();
+      carregarDespesas();
+      atualizarRelatorioFinanceiro();
+    };
+
+    // INSUMOS BÁSICOS ADICIONADOS AUTOMATICAMENTE
+    function carregarInsumosPadraoAutomaticos() {
+      itensOrcamento = [
+        { idItem: 1001, descricao: "Cola de Contato Spray (Lata 500ml)", qtd: 1, precoUnitario: 45.00, subtotal: 45.00, automatico: true },
+        { idItem: 1002, descricao: "Grampo Galvanizado 80/12 (Caixa 5000un)", qtd: 1, precoUnitario: 32.00, subtotal: 32.00, automatico: true },
+        { idItem: 1003, descricao: "Linha de Nylon Pesada nº 40 (Cone)", qtd: 1, precoUnitario: 22.00, subtotal: 22.00, automatico: true }
+      ];
+    }
+
+    // CONTROLE DE SIDEBAR LATERAL
+    function openSidebar() {
+      document.getElementById('sidebarOverlay').classList.add('active');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+
+    function hideHeader() {
+      document.getElementById('mainTopbar').classList.add('hidden');
+      document.getElementById('floatingMenuBtn').classList.remove('hide');
+    }
+
+    function showHeader() {
+      document.getElementById('mainTopbar').classList.remove('hidden');
+      document.getElementById('floatingMenuBtn').classList.add('hide');
+    }
+
+    // ALTERNÂNCIA DE ABAS
+    function switchTab(tab) {
+      ['orcamento', 'materiais', 'historico', 'relatorio'].forEach(t => {
+        document.getElementById(`tab-${t}`).style.display = (t === tab) ? 'grid' : 'none';
+        if (t === 'materiais' || t === 'historico') {
+          if (t === tab) document.getElementById(`tab-${t}`).style.display = 'block';
         }
+        document.getElementById(`nav-${t}`).classList.toggle('active', t === tab);
+      });
 
-        function downloadPDF() {
-            const element = document.getElementById('pdf-template');
-            const opt = {
-                margin: 0.3,
-                filename: 'Proposta_Riso_Estofados.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        }
+      if (tab !== 'orcamento') {
+        showHeader();
+      }
 
-        function saveQuote() {
-            if (!currentQuoteItems.length) {
-                alert('Adicione materiais antes de salvar o orçamento!');
-                return;
-            }
+      closeSidebar();
+    }
 
-            const calc = updateSummary();
-            const quote = {
-                id: Date.now(),
-                date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                client: document.getElementById('orc-cliente').value.trim() || 'Cliente Sem Nome',
-                phone: document.getElementById('orc-telefone').value,
-                neighborhood: currentNeighborhood,
-                freight: calc.currentFreight,
-                labor: calc.labor,
-                materialsCost: calc.totalMaterials,
-                items: [...currentQuoteItems],
-                total: calc.grandTotal,
-                status: 'Aprovado'
-            };
+    // BANCO DE DADOS LOCALSTORAGE (MATERIAIS)
+    function carregarMateriais() {
+      const db = localStorage.getItem('riso_materiais_db');
+      if (db) {
+        materiais = JSON.parse(db);
+      } else {
+        materiais = [...materiaisPadrao];
+        salvarMateriaisStorage();
+      }
+    }
 
-            quotes.unshift(quote);
-            saveStorage();
-            renderHistoryTable();
-            renderFinancialReports();
-            alert('Orçamento salvo no histórico com sucesso!');
-        }
+    function salvarMateriaisStorage() {
+      localStorage.setItem('riso_materiais_db', JSON.stringify(materiais));
+    }
 
-        function renderHistoryTable() {
-            const tbody = document.getElementById('tabela-historico-orcamentos');
-            tbody.innerHTML = '';
+    function preencherSelectBairros() {
+      const select = document.getElementById('bairro');
+      select.innerHTML = "";
+      bairrosJP.sort((a,b) => a.nome.localeCompare(b.nome)).forEach((b) => {
+        let opt = document.createElement('option');
+        opt.value = b.valor;
+        opt.dataset.nome = b.nome;
+        opt.textContent = `${b.nome} - Frete: R$ ${b.valor.toFixed(2)}`;
+        select.appendChild(opt);
+      });
+      calcularFrete();
+    }
 
-            if (!quotes.length) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Nenhum orçamento salvo no histórico.</td></tr>';
-                return;
-            }
+    // SELEÇÃO DIRETA DAS 5 CATEGORIAS PRINCIPAIS
+    function selecionarCategoriaDireta(cat) {
+      categoriaAtualSelecionada = cat;
 
-            quotes.forEach(q => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="small">${q.date}</td>
-                        <td class="fw-bold">${q.client}</td>
-                        <td>${q.neighborhood}</td>
-                        <td class="fw-bold text-success">R$ ${q.total.toFixed(2)}</td>
-                        <td>
-                            <select class="form-select form-select-sm" onchange="updateQuoteStatus(${q.id}, this.value)">
-                                <option value="Aprovado" ${q.status==='Aprovado'?'selected':''}>Aprovado</option>
-                                <option value="Concluído" ${q.status==='Concluído'?'selected':''}>Concluído</option>
-                                <option value="Cancelado" ${q.status==='Cancelado'?'selected':''}>Cancelado</option>
-                            </select>
-                        </td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-outline-primary" onclick="reloadQuote(${q.id})"><i class="fa-solid fa-folder-open"></i></button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteQuote(${q.id})"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
+      // Ocultar cabeçalho para foco total no formulário
+      hideHeader();
 
-        function updateQuoteStatus(id, newStatus) {
-            const q = quotes.find(x => x.id === id);
-            if (q) {
-                q.status = newStatus;
-                saveStorage();
-                renderFinancialReports();
-            }
-        }
+      // Destacar o botão da categoria ativa
+      const mapBtn = {
+        'Tecidos': 'btnCat-Tecidos',
+        'Espumas': 'btnCat-Espumas',
+        'Estrutura e Suporte': 'btnCat-Estrutura',
+        'Molas': 'btnCat-Molas',
+        'Madeira': 'btnCat-Madeira'
+      };
 
-        function reloadQuote(id) {
-            const q = quotes.find(x => x.id === id);
-            if (q) {
-                document.getElementById('orc-cliente').value = q.client;
-                document.getElementById('orc-telefone').value = q.phone || '';
-                document.getElementById('orc-maodeobra').value = q.labor;
-                currentQuoteItems = [...q.items];
-                switchTab('orcamento', document.querySelectorAll('.nav-pills .nav-link')[0]);
-                updateSummary();
-            }
-        }
+      document.querySelectorAll('.cat-tab-btn').forEach(btn => btn.classList.remove('active'));
+      if (mapBtn[cat]) {
+        document.getElementById(mapBtn[cat]).classList.add('active');
+      }
 
-        function deleteQuote(id) {
-            if (confirm('Deseja excluir este orçamento do histórico?')) {
-                quotes = quotes.filter(q => q.id !== id);
-                saveStorage();
-                renderHistoryTable();
-                renderFinancialReports();
-            }
-        }
+      filtrarMateriaisPorCategoria(cat);
+    }
 
-        function renderMaterialsTable() {
-            const tbody = document.getElementById('tabela-banco-materiais');
-            tbody.innerHTML = '';
+    function filtrarMateriaisPorCategoria(cat) {
+      const select = document.getElementById('materialSel');
+      select.innerHTML = "";
 
-            materials.forEach((m, idx) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><span class="badge bg-secondary-subtle text-secondary">${m.categoria}</span></td>
-                        <td class="fw-semibold">${m.nome}</td>
-                        <td class="fw-bold text-success">R$ ${m.preco.toFixed(2)}</td>
-                        <td>${m.unidade}</td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-outline-primary" onclick="editMaterial(${idx})"><i class="fa-solid fa-pen"></i></button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMaterial(${idx})"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
+      const filtrados = materiais.filter(m => m.categoria === cat || (cat === 'Estrutura e Suporte' && m.categoria === 'Estrutura e Suporte'));
 
-        function openMaterialModal() {
-            document.getElementById('edit-mat-index').value = '-1';
-            document.getElementById('cad-nome').value = '';
-            document.getElementById('cad-preco').value = '';
-            new bootstrap.Modal(document.getElementById('modalMaterial')).show();
-        }
+      if (filtrados.length === 0) {
+        select.innerHTML = "<option value='-1'>Nenhum material cadastrado nesta categoria</option>";
+        return;
+      }
 
-        function saveMaterialFromModal() {
-            const cat = document.getElementById('cad-categoria').value;
-            const nome = document.getElementById('cad-nome').value.trim();
-            const preco = parseFloat(document.getElementById('cad-preco').value) || 0;
-            const unidade = document.getElementById('cad-unidade').value;
-            const editIndex = parseInt(document.getElementById('edit-mat-index').value);
+      filtrados.forEach((m) => {
+        const idx = materiais.indexOf(m);
+        let opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${m.nome} - R$ ${m.preco.toFixed(2)} / ${m.unidade}`;
+        select.appendChild(opt);
+      });
 
-            if (editIndex >= 0) {
-                materials[editIndex] = { categoria: cat, nome, preco, unidade };
-            } else {
-                materials.push({ categoria: cat, nome, preco, unidade });
-            }
+      aoSelecionarMaterial();
+    }
 
-            saveStorage();
-            renderMaterialsTable();
-            filterMaterialsByCategory();
-            bootstrap.Modal.getInstance(document.getElementById('modalMaterial')).hide();
-        }
+    function aoSelecionarMaterial() {
+      const idx = parseInt(document.getElementById('materialSel').value);
+      if (isNaN(idx) || idx < 0 || !materiais[idx]) return;
 
-        function editMaterial(idx) {
-            const m = materials[idx];
-            document.getElementById('cad-categoria').value = m.categoria;
-            document.getElementById('cad-nome').value = m.nome;
-            document.getElementById('cad-preco').value = m.preco;
-            document.getElementById('cad-unidade').value = m.unidade;
-            document.getElementById('edit-mat-index').value = idx;
-            new bootstrap.Modal(document.getElementById('modalMaterial')).show();
-        }
+      const mat = materiais[idx];
+      const isEspuma = mat.unidade === 'espuma';
 
-        function deleteMaterial(idx) {
-            if (confirm(`Remover "${materials[idx].nome}" do seu cadastro?`)) {
-                materials.splice(idx, 1);
-                saveStorage();
-                renderMaterialsTable();
-                filterMaterialsByCategory();
-            }
-        }
+      document.getElementById('espumaCampos').style.display = isEspuma ? 'block' : 'none';
 
-        function saveExpense() {
-            const name = document.getElementById('despesa-nome').value.trim();
-            const val = parseFloat(document.getElementById('despesa-valor').value) || 0;
-            const cat = document.getElementById('despesa-categoria').value;
+      if (isEspuma) {
+        calcularPrecoEspumaDinamico();
+      } else {
+        document.getElementById('precoUnitarioInput').value = mat.preco.toFixed(2);
+      }
+    }
 
-            if (!name || val <= 0) return;
+    function calcularPrecoEspumaDinamico() {
+      const d = document.getElementById('densidade').value;
+      const e = parseInt(document.getElementById('espessura').value) || 1;
+      const fatores = { "D20": 18, "D23": 22, "D26": 26, "D28": 30, "D33": 38, "D45": 48 };
+      const preco = (fatores[d] || 30) * (e * 0.8);
+      document.getElementById('precoUnitarioInput').value = preco.toFixed(2);
+    }
 
-            expenses.unshift({
-                id: Date.now(),
-                date: new Date().toLocaleDateString('pt-BR'),
-                description: name,
-                category: cat,
-                value: val
-            });
+    function calcularFrete() {
+      const select = document.getElementById('bairro');
+      valorFreteAtual = parseFloat(select.value);
+      nomeBairroAtual = select.options[select.selectedIndex].dataset.nome;
+      document.getElementById('resumoBairro').innerHTML = `<strong>Entrega:</strong> ${nomeBairroAtual}`;
+      atualizarResumo();
+    }
 
-            saveStorage();
-            document.getElementById('form-despesa').reset();
-            renderFinancialReports();
-        }
+    // MANIPULAÇÃO DO ORÇAMENTO
+    function adicionarItemAoOrcamento() {
+      const idx = parseInt(document.getElementById('materialSel').value);
+      if (isNaN(idx) || idx < 0) {
+        alert("Selecione um material válido.");
+        return;
+      }
 
-        function deleteExpense(id) {
-            expenses = expenses.filter(e => e.id !== id);
-            saveStorage();
-            renderFinancialReports();
-        }
+      const mat = materiais[idx];
+      const qtd = parseFloat(document.getElementById('qtdInput').value) || 1;
+      const precoUnitario = parseFloat(document.getElementById('precoUnitarioInput').value) || 0;
 
-        function renderFinancialReports() {
-            const activeQuotes = quotes.filter(q => q.status === 'Aprovado' || q.status === 'Concluído');
+      let descricao = mat.nome;
+      if (mat.unidade === 'espuma') {
+        const d = document.getElementById('densidade').value;
+        const e = document.getElementById('espessura').value;
+        descricao = `Espuma ${d} (${e} cm)`;
+      }
 
-            const faturamento = activeQuotes.reduce((sum, q) => sum + q.total, 0);
-            const materiaisCost = activeQuotes.reduce((sum, q) => sum + (q.materialsCost || 0), 0);
-            const maodeobra = activeQuotes.reduce((sum, q) => sum + (q.labor || 0), 0);
-            const extraExpensesTotal = expenses.reduce((sum, e) => sum + e.value, 0);
+      const subtotal = precoUnitario * qtd;
 
-            const netProfit = faturamento - materiaisCost - extraExpensesTotal;
+      itensOrcamento.push({
+        idItem: Date.now(),
+        descricao,
+        qtd,
+        precoUnitario,
+        subtotal,
+        automatico: false
+      });
 
-            document.getElementById('kpi-faturamento').innerText = 'R$ ' + faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            document.getElementById('kpi-materiais').innerText = 'R$ ' + materiaisCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            document.getElementById('kpi-maodeobra').innerText = 'R$ ' + maodeobra.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            document.getElementById('kpi-lucro').innerText = 'R$ ' + netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      atualizarResumo();
+    }
 
-            const tbody = document.getElementById('tabela-extrato-financeiro');
-            tbody.innerHTML = '';
+    function removerItemOrcamento(idItem) {
+      itensOrcamento = itensOrcamento.filter(i => i.idItem !== idItem);
+      atualizarResumo();
+    }
 
-            // Show active quotes + expenses in single ledger
-            activeQuotes.forEach(q => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="small">${q.date}</td>
-                        <td>Entrada: ${q.client} (${q.neighborhood})</td>
-                        <td><span class="badge bg-success-subtle text-success">Receita</span></td>
-                        <td class="fw-bold text-success">+ R$ ${q.total.toFixed(2)}</td>
-                        <td></td>
-                    </tr>
-                `;
-            });
+    function editarItemOrcamento(idItem) {
+      const item = itensOrcamento.find(i => i.idItem === idItem);
+      if (!item) return;
 
-            expenses.forEach(e => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="small">${e.date}</td>
-                        <td>Despesa: ${e.description}</td>
-                        <td><span class="badge bg-danger-subtle text-danger">${e.category}</span></td>
-                        <td class="fw-bold text-danger">- R$ ${e.value.toFixed(2)}</td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteExpense(${e.id})"><i class="fa-solid fa-xmark"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
+      const novaQtd = prompt(`Altere a quantidade para "${item.descricao}":`, item.qtd);
+      if (novaQtd === null) return;
+      const novoPreco = prompt(`Altere o preço unitário (R$):`, item.precoUnitario);
+      if (novoPreco === null) return;
 
-            if (!activeQuotes.length && !expenses.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Nenhum lançamento no extrato.</td></tr>';
-            }
-        }
-    </script>
+      item.qtd = parseFloat(novaQtd) || item.qtd;
+      item.precoUnitario = parseFloat(novoPreco) || item.precoUnitario;
+      item.subtotal = item.qtd * item.precoUnitario;
+
+      atualizarResumo();
+    }
+
+    function atualizarResumo() {
+      const cliente = document.getElementById('cliente').value.trim() || "Não informado";
+      document.getElementById('resumoCliente').innerHTML = `<strong>Cliente:</strong> ${cliente}`;
+
+      const lista = document.getElementById('listaItens');
+      lista.innerHTML = "";
+
+      let totalMateriais = 0;
+
+      itensOrcamento.forEach((item) => {
+        totalMateriais += item.subtotal;
+        const tagAuto = item.automatico ? `<span class="badge-auto">Insumo Base</span>` : '';
+        
+        lista.innerHTML += `
+          <li>
+            <div class="item-info">
+              <span class="item-title">${item.descricao} ${tagAuto}</span>
+              <span class="item-detail">${item.qtd}x R$ ${item.precoUnitario.toFixed(2)} = R$ ${item.subtotal.toFixed(2)}</span>
+            </div>
+            <div class="item-actions">
+              <button class="btn-sm btn-warning" onclick="editarItemOrcamento(${item.idItem})"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-sm btn-danger" onclick="removerItemOrcamento(${item.idItem})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </li>
+        `;
+      });
+
+      const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+
+      lista.innerHTML += `
+        <li style="background: #f1f5f9; font-size: 0.82rem;">
+          <span>Mão de Obra de Tapeçaria:</span> <strong>R$ ${maoDeObra.toFixed(2)}</strong>
+        </li>
+        <li style="background: #f1f5f9; font-size: 0.82rem;">
+          <span>Frete e Entrega (${nomeBairroAtual}):</span> <strong>R$ ${valorFreteAtual.toFixed(2)}</strong>
+        </li>
+      `;
+
+      const valorTotal = totalMateriais + maoDeObra + valorFreteAtual;
+      document.getElementById('valorTotal').textContent = valorTotal.toFixed(2);
+    }
+
+    // ENVIO VIA WHATSAPP
+    function enviarWhatsApp() {
+      const cliente = document.getElementById('cliente').value.trim() || "Cliente";
+      const telefone = document.getElementById('telefone').value.replace(/\D/g, '');
+      const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+
+      if (itensOrcamento.length === 0) {
+        alert("Adicione ao menos um material ao orçamento antes de enviar.");
+        return;
+      }
+
+      let texto = `*ORÇAMENTO DE TAPEÇARIA - RISO ESTOFADOS*\n`;
+      texto += `📍 R. Irani Almeida de Menezes, 2 - João Paulo II, João Pessoa - PB\n`;
+      texto += `👤 *Cliente:* ${cliente}\n\n`;
+      texto += `🛋️ *MATERIAIS E SERVIÇOS:*\n`;
+
+      let totalMateriais = 0;
+      itensOrcamento.forEach((item) => {
+        totalMateriais += item.subtotal;
+        texto += `• ${item.qtd}x ${item.descricao} - R$ ${item.subtotal.toFixed(2)}\n`;
+      });
+
+      texto += `\n🛠️ *Mão de Obra:* R$ ${maoDeObra.toFixed(2)}\n`;
+      texto += `🚚 *Frete (${nomeBairroAtual}):* R$ ${valorFreteAtual.toFixed(2)}\n`;
+
+      const valorTotal = totalMateriais + maoDeObra + valorFreteAtual;
+      texto += `\n💰 *VALOR TOTAL:* R$ ${valorTotal.toFixed(2)}\n`;
+      texto += `⏳ *Prazo de Entrega:* 15 dias, podendo variar a depender da complexidade.\n\n`;
+      texto += `_Ficamos à disposição para agendar o recolhimento do estofado!_`;
+
+      const dest = telefone ? `55${telefone}` : '';
+      const url = `https://api.whatsapp.com/send?phone=${dest}&text=${encodeURIComponent(texto)}`;
+      
+      window.open(url, '_blank');
+    }
+
+    // IMPRESSÃO / PDF COMERCIAL
+    function gerarPDFImpressao() {
+      if (itensOrcamento.length === 0) {
+        alert("Monte o orçamento antes de gerar o PDF/Impressão.");
+        return;
+      }
+
+      const cliente = document.getElementById('cliente').value.trim() || "Não Informado";
+      const telefone = document.getElementById('telefone').value || "Não Informado";
+      const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+
+      document.getElementById('pdfCliente').textContent = cliente;
+      document.getElementById('pdfTelefone').textContent = telefone;
+      document.getElementById('pdfBairro').textContent = nomeBairroAtual;
+      document.getElementById('pdfData').textContent = new Date().toLocaleDateString('pt-BR');
+
+      const tbody = document.getElementById('pdfTabelaItens');
+      tbody.innerHTML = "";
+
+      let totalMateriais = 0;
+      itensOrcamento.forEach((i) => {
+        totalMateriais += i.subtotal;
+        tbody.innerHTML += `
+          <tr>
+            <td style="border: 1px solid #cbd5e1; padding: 8px;">${i.descricao}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${i.qtd}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;">R$ ${i.precoUnitario.toFixed(2)}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: right;">R$ ${i.subtotal.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('pdfTotalMateriais').textContent = totalMateriais.toFixed(2);
+      document.getElementById('pdfMaoObra').textContent = maoDeObra.toFixed(2);
+      document.getElementById('pdfFrete').textContent = valorFreteAtual.toFixed(2);
+      
+      const totalGeral = totalMateriais + maoDeObra + valorFreteAtual;
+      document.getElementById('pdfValorTotal').textContent = totalGeral.toFixed(2);
+
+      window.print();
+    }
+
+    // SALVAR / HISTÓRICO DE ORÇAMENTOS
+    function salvarOrcamento() {
+      if (itensOrcamento.length === 0) {
+        alert("Adicione itens ao orçamento antes de salvar.");
+        return;
+      }
+
+      const cliente = document.getElementById('cliente').value.trim() || "Cliente Sem Nome";
+      const telefone = document.getElementById('telefone').value;
+      const maoDeObra = parseFloat(document.getElementById('maoDeObra').value) || 0;
+      const totalMateriais = itensOrcamento.reduce((acc, i) => acc + i.subtotal, 0);
+      const valorTotal = totalMateriais + maoDeObra + valorFreteAtual;
+
+      const orc = {
+        id: Date.now(),
+        dataHora: new Date().toLocaleString('pt-BR'),
+        cliente,
+        telefone,
+        bairro: nomeBairroAtual,
+        valorFrete: valorFreteAtual,
+        totalMateriais,
+        maoDeObra,
+        itens: [...itensOrcamento],
+        valorTotal
+      };
+
+      let historico = JSON.parse(localStorage.getItem('riso_historico_db') || '[]');
+      historico.unshift(orc);
+      localStorage.setItem('riso_historico_db', JSON.stringify(historico));
+
+      alert("Orçamento salvo no histórico!");
+      carregarHistorico();
+      atualizarRelatorioFinanceiro();
+    }
+
+    function carregarHistorico() {
+      const historico = JSON.parse(localStorage.getItem('riso_historico_db') || '[]');
+      const tbody = document.getElementById('tabelaHistorico');
+      tbody.innerHTML = "";
+
+      if (historico.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">Nenhum orçamento salvo no histórico.</td></tr>`;
+        return;
+      }
+
+      historico.forEach((orc) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${orc.dataHora}</td>
+            <td>${orc.cliente}</td>
+            <td>${orc.bairro}</td>
+            <td><strong>R$ ${orc.valorTotal.toFixed(2)}</strong></td>
+            <td>
+              <button class="btn-sm btn-secondary" onclick="recarregarOrcamento(${orc.id})">Carregar</button>
+              <button class="btn-sm btn-danger" onclick="excluirOrcamentoHistorico(${orc.id})">Excluir</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function recarregarOrcamento(id) {
+      const historico = JSON.parse(localStorage.getItem('riso_historico_db') || '[]');
+      const orc = historico.find(o => o.id === id);
+
+      if (orc) {
+        document.getElementById('cliente').value = orc.cliente;
+        document.getElementById('telefone').value = orc.telefone || "";
+        document.getElementById('maoDeObra').value = orc.maoDeObra;
+        itensOrcamento = [...orc.itens];
+        atualizarResumo();
+        switchTab('orcamento');
+      }
+    }
+
+    function excluirOrcamentoHistorico(id) {
+      if (confirm("Deseja excluir este orçamento do histórico?")) {
+        let historico = JSON.parse(localStorage.getItem('riso_historico_db') || '[]');
+        historico = historico.filter(o => o.id !== id);
+        localStorage.setItem('riso_historico_db', JSON.stringify(historico));
+        carregarHistorico();
+        atualizarRelatorioFinanceiro();
+      }
+    }
+
+    function limparOrcamentoAtual() {
+      carregarInsumosPadraoAutomaticos();
+      document.getElementById('cliente').value = "";
+      document.getElementById('telefone').value = "";
+      atualizarResumo();
+    }
+
+    // CADASTRO / EDIÇÃO DE MATERIAIS
+    function salvarNovoMaterial() {
+      const cat = document.getElementById('cadCategoria').value;
+      const nome = document.getElementById('cadNome').value.trim();
+      const preco = parseFloat(document.getElementById('cadPreco').value) || 0;
+      const unidade = document.getElementById('cadUnidade').value;
+      const editIdx = parseInt(document.getElementById('editMaterialIndex').value);
+
+      if (!nome) {
+        alert("Preencha o nome do material.");
+        return;
+      }
+
+      if (editIdx >= 0) {
+        materiais[editIdx] = { categoria: cat, nome, preco, unidade };
+      } else {
+        materiais.push({ categoria: cat, nome, preco, unidade });
+      }
+
+      salvarMateriaisStorage();
+      renderizarTabelaMateriais();
+      limparFormularioCadastro();
+      selecionarCategoriaDireta(cat);
+      alert("Material salvo com sucesso!");
+    }
+
+    function renderizarTabelaMateriais() {
+      const tbody = document.getElementById('tabelaMateriaisCadastrados');
+      tbody.innerHTML = "";
+
+      materiais.forEach((m, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td><span class="badge">${m.categoria}</span></td>
+            <td>${m.nome}</td>
+            <td>R$ ${m.preco.toFixed(2)}</td>
+            <td>${m.unidade}</td>
+            <td>
+              <button class="btn-sm btn-warning" onclick="prepararEdicaoMaterial(${idx})">Editar</button>
+              <button class="btn-sm btn-danger" onclick="excluirMaterialCadastro(${idx})">Excluir</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function prepararEdicaoMaterial(idx) {
+      const m = materiais[idx];
+      document.getElementById('cadCategoria').value = m.categoria;
+      document.getElementById('cadNome').value = m.nome;
+      document.getElementById('cadPreco').value = m.preco;
+      document.getElementById('cadUnidade').value = m.unidade;
+      document.getElementById('editMaterialIndex').value = idx;
+    }
+
+    function excluirMaterialCadastro(idx) {
+      if (confirm(`Excluir "${materiais[idx].nome}" do seu cadastro?`)) {
+        materiais.splice(idx, 1);
+        salvarMateriaisStorage();
+        renderizarTabelaMateriais();
+      }
+    }
+
+    function limparFormularioCadastro() {
+      document.getElementById('cadNome').value = "";
+      document.getElementById('cadPreco').value = "";
+      document.getElementById('editMaterialIndex').value = "-1";
+    }
+
+    // RELATÓRIO FINANCEIRO E DESPESAS
+    function carregarDespesas() {
+      despesasOficina = JSON.parse(localStorage.getItem('riso_despesas_db') || '[]');
+      renderizarTabelaDespesas();
+    }
+
+    function salvarDespesasStorage() {
+      localStorage.setItem('riso_despesas_db', JSON.stringify(despesasOficina));
+    }
+
+    function adicionarDespesaOficina() {
+      const desc = document.getElementById('descDespesa').value.trim();
+      const valor = parseFloat(document.getElementById('valorDespesa').value) || 0;
+
+      if (!desc || valor <= 0) {
+        alert("Preencha a descrição e um valor válido.");
+        return;
+      }
+
+      despesasOficina.push({ id: Date.now(), desc, valor });
+      salvarDespesasStorage();
+      renderizarTabelaDespesas();
+      atualizarRelatorioFinanceiro();
+
+      document.getElementById('descDespesa').value = "";
+      document.getElementById('valorDespesa').value = "";
+    }
+
+    function removerDespesa(id) {
+      despesasOficina = despesasOficina.filter(d => d.id !== id);
+      salvarDespesasStorage();
+      renderizarTabelaDespesas();
+      atualizarRelatorioFinanceiro();
+    }
+
+    function renderizarTabelaDespesas() {
+      const tbody = document.getElementById('tabelaDespesas');
+      tbody.innerHTML = "";
+
+      if (despesasOficina.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">Nenhuma despesa lançada.</td></tr>`;
+        return;
+      }
+
+      despesasOficina.forEach((d) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${d.desc}</td>
+            <td>R$ ${d.valor.toFixed(2)}</td>
+            <td><button class="btn-sm btn-danger" onclick="removerDespesa(${d.id})">Excluir</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function atualizarRelatorioFinanceiro() {
+      const historico = JSON.parse(localStorage.getItem('riso_historico_db') || '[]');
+      
+      let entradaTotal = 0;
+      let gastoMateriais = 0;
+      let receitaMaoDeObra = 0;
+
+      historico.forEach(o => {
+        entradaTotal += o.valorTotal || 0;
+        gastoMateriais += o.totalMateriais || 0;
+        receitaMaoDeObra += o.maoDeObra || 0;
+      });
+
+      const totalDespesasOficina = despesasOficina.reduce((acc, d) => acc + d.valor, 0);
+      const lucroReal = receitaMaoDeObra - totalDespesasOficina;
+
+      document.getElementById('dashEntrada').textContent = `R$ ${entradaTotal.toFixed(2)}`;
+      document.getElementById('dashGastoMateriais').textContent = `R$ ${gastoMateriais.toFixed(2)}`;
+      document.getElementById('dashMaoDeObra').textContent = `R$ ${receitaMaoDeObra.toFixed(2)}`;
+      document.getElementById('dashLucroLiquido').textContent = `R$ ${lucroReal.toFixed(2)}`;
+    }
+  </script>
 </body>
 </html>

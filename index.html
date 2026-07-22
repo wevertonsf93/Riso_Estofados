@@ -50,6 +50,38 @@
             background-color: var(--brand-primary);
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .app-navbar.header-hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+            position: fixed;
+            width: 100%;
+        }
+
+        .menu-bar-trigger {
+            position: fixed;
+            top: 12px;
+            right: 15px;
+            z-index: 1040;
+            display: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            animation: fadeInScale 0.25s ease-out forwards;
+        }
+
+        .menu-bar-trigger.visible {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        @keyframes fadeInScale {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .nav-pills .nav-link {
@@ -122,7 +154,12 @@
 </head>
 <body>
 
-    <header class="app-navbar py-2 px-3 sticky-top">
+    <!-- Botão flutuante para reexibir o cabeçalho/menu quando ocultado -->
+    <button id="btn-show-header" class="btn btn-primary btn-sm menu-bar-trigger rounded-pill px-3 py-2 fw-bold" onclick="showHeader()" title="Clique para exibir o Menu">
+        <i class="fa-solid fa-bars me-2"></i> Menu
+    </button>
+
+    <header class="app-navbar py-2 px-3 sticky-top" id="main-header">
         <div class="container-fluid d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="bg-primary text-white rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
@@ -130,7 +167,7 @@
                 </div>
                 <div>
                     <h5 class="m-0 fw-bold text-white">Riso Estofados</h5>
-                    <span class="extra-small text-white-50" style="font-size: 0.75rem;">Sede: João Paulo II - João Pessoa / PB</span>
+                    <span class="extra-small text-white-50" style="font-size: 0.75rem;">R. Irani Almeida de Menezes, 2 - Cidade dos Funcionários II, João Pessoa - PB</span>
                 </div>
             </div>
 
@@ -548,7 +585,7 @@
                                 <div>
                                     <h2 class="fw-bold text-primary m-0">RISO ESTOFADOS</h2>
                                     <p class="text-muted small m-0">Especialistas em Reforma e Estofamento Profissional</p>
-                                    <div class="extra-small text-muted mt-1">Sede: João Paulo II - João Pessoa / PB | Tel/WhatsApp: (83) 98888-7777</div>
+                                    <div class="extra-small text-muted mt-1">Endereço: R. Irani Almeida de Menezes, 2 - Cidade dos Funcionários II, João Pessoa - PB, 58078-010 | Tel/WhatsApp: (83) 99185-1475</div>
                                 </div>
                                 <div class="text-end">
                                     <span class="badge bg-primary fs-6 px-3 py-2" id="pdf-orc-id">ORÇ-001</span>
@@ -587,8 +624,7 @@
                             <!-- Summary & Payment Terms -->
                             <div class="row align-items-center mb-4">
                                 <div class="col-7 small">
-                                    <div><strong>Prazo de Entrega:</strong> 10 a 15 dias úteis</div>
-                                    <div><strong>Garantia:</strong> 12 meses na estrutura e costuras</div>
+                                    <div><strong>Prazo de Entrega:</strong> 15 dias, podendo variar a depender da complexidade</div>
                                     <div><strong>Condições:</strong> 50% de sinal + 50% na entrega do estofado</div>
                                     <div class="text-muted extra-small mt-1" id="pdf-obs-lbl"></div>
                                 </div>
@@ -654,7 +690,8 @@
         ];
 
         const bairrosJP = [
-            { nome: "João Paulo II (Sede)", valor: 50.00 },
+            { nome: "Cidade dos Funcionários II (Sede)", valor: 50.00 },
+            { nome: "João Paulo II", valor: 50.00 },
             { nome: "Geisel", valor: 50.00 },
             { nome: "Cristo Redentor", valor: 50.00 },
             { nome: "Mangabeira", valor: 50.00 },
@@ -679,7 +716,7 @@
 
         let currentQuoteItems = [];
         let currentFreight = 50.00;
-        let currentNeighborhood = "João Paulo II (Sede)";
+        let currentNeighborhood = "Cidade dos Funcionários II (Sede)";
 
         window.onload = function() {
             populateFreightSelect();
@@ -690,6 +727,7 @@
         };
 
         function switchTab(tabId, btnElement) {
+            showHeader();
             document.querySelectorAll('.tab-pane-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-pills .nav-link').forEach(el => el.classList.remove('active'));
             
@@ -732,8 +770,32 @@
             updateSummary();
         }
 
+        function hideHeader() {
+            const header = document.getElementById('main-header');
+            const menuBtn = document.getElementById('btn-show-header');
+            if (header && menuBtn) {
+                header.classList.add('header-hidden');
+                menuBtn.classList.add('visible');
+            }
+        }
+
+        function showHeader() {
+            const header = document.getElementById('main-header');
+            const menuBtn = document.getElementById('btn-show-header');
+            if (header && menuBtn) {
+                header.classList.remove('header-hidden');
+                menuBtn.classList.remove('visible');
+            }
+        }
+
         function filterMaterialsByCategory() {
             const cat = document.getElementById('orc-categoria-sel').value;
+
+            // Oculta o cabeçalho ao selecionar qualquer categoria
+            if (cat && cat !== 'todos') {
+                hideHeader();
+            }
+
             const select = document.getElementById('orc-material-sel');
             select.innerHTML = '';
 
@@ -874,7 +936,8 @@
             const labor = parseFloat(document.getElementById('orc-maodeobra').value) || 0;
 
             let msg = `*ORÇAMENTO DE REFORMA DE ESTOFADO - RISO ESTOFADOS*\n`;
-            msg += `📍 *Sede:* João Paulo II, João Pessoa - PB\n`;
+            msg += `📍 *Endereço:* R. Irani Almeida de Menezes, 2 - Cidade dos Funcionários II, João Pessoa - PB, 58078-010\n`;
+            msg += `📞 *Tel/WhatsApp:* (83) 99185-1475\n`;
             msg += `👤 *Cliente:* ${client}\n\n`;
             msg += `🛋️ *MATERIAIS E INSUMOS:*\n`;
 
